@@ -640,24 +640,58 @@ def admin_manage_spot(spot_id):
     db.session.commit()
     return jsonify({"success": True})
 
+def seed_data_from_json():
+    """從 data.json 注入初始流域與釣點資料（若資料庫為空）"""
+    try:
+        if Basin.query.count() == 0:
+            json_path = os.path.join(basedir, 'data.json')
+            if not os.path.exists(json_path):
+                print("⚠️ data.json not found, skipping seed.")
+                return
+            
+            with open(json_path, 'r', encoding='utf-8') as f:
+                seed_data = json.load(f)
+            
+            print("🌱 Seeding database from data.json...")
+            for b_data in seed_data:
+                basin = Basin(
+                    id=b_data['id'],
+                    name=b_data['name'],
+                    weather_station_id=b_data.get('weather_station_id'),
+                    weather_station_name=b_data.get('weather_station_name')
+                )
+                db.session.add(basin)
+                
+                for s_data in b_data.get('sections', []):
+                    section = RiverSection(
+                        basin_id=basin.id,
+                        section_id=s_data['id'],
+                        name=s_data['name']
+                    )
+                    db.session.add(section)
+            db.session.commit()
+            print("✅ Seeding complete.")
+    except Exception as e:
+        print(f"❌ Seeding error: {e}")
+
 def init_mock_telemetry():
     """初始化模擬數據供展示趨勢圖"""
-    with app.app_context():
-        if TelemetryLog.query.count() == 0:
-            print("Initializing mock telemetry history...")
-            for b_id in ['pinglin', 'wulai']:
-                base_level = 106.0
-                for i in range(24):
-                    t_str = f"{(time.localtime().tm_hour - (23-i)) % 24:02d}:00"
-                    # Level trend (slight drop)
-                    db.session.add(TelemetryLog(basin_id=b_id, data_type='level', value=base_level + random.uniform(-0.5, 0.5), timestamp=t_str))
-                    # Rain trend
-                    db.session.add(TelemetryLog(basin_id=b_id, data_type='rain', value=random.uniform(0, 5), timestamp=t_str))
-            db.session.commit()
+    if TelemetryLog.query.count() == 0:
+        print("Initializing mock telemetry history...")
+        for b_id in ['pinglin', 'wulai']:
+            base_level = 106.0
+            for i in range(24):
+                t_str = f"{(time.localtime().tm_hour - (23-i)) % 24:02d}:00"
+                db.session.add(TelemetryLog(basin_id=b_id, data_type='level', value=base_level + random.uniform(-0.5, 0.5), timestamp=t_str))
+                db.session.add(TelemetryLog(basin_id=b_id, data_type='rain', value=random.uniform(0, 5), timestamp=t_str))
+        db.session.commit()
+
+# --- App Initialization (Critical for Cloud/Gunicorn) ---
+with app.app_context():
+    db.create_all()
+    seed_data_from_json()
+    init_mock_telemetry()
 
 if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
-        init_mock_telemetry()
     # Industrial Stability: No Debug Mode, No Reloader on Mac
     app.run(host='0.0.0.0', port=5001, debug=False, threaded=True)

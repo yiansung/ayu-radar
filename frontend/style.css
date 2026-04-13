@@ -1,0 +1,496 @@
+/* Base Reset & Variables */
+:root {
+    --bg-dark: #0f172a;
+    --primary-color: #38bdf8;
+    --accent-green: #22c55e;
+    --accent-red: #ef4444;
+    --accent-yellow: #eab308;
+    --glass-bg: rgba(30, 41, 59, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --font-main: 'Inter', 'Noto Sans TC', sans-serif;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-main);
+    background-color: var(--bg-dark);
+    color: var(--text-primary);
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* Dynamic Mesh Background */
+.background-mesh {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: -1;
+    background: radial-gradient(circle at 15% 50%, rgba(2, 132, 199, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 85% 30%, rgba(14, 165, 233, 0.15) 0%, transparent 50%);
+    animation: pulse 15s infinite alternate;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); opacity: 0.8; }
+    100% { transform: scale(1.1); opacity: 1; }
+}
+
+.container {
+    width: 1200px; /* 固定寬度，不隨銀幕縮放 */
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+/* Glassmorphism Utilities */
+.glass-panel {
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+}
+
+.glass-card {
+    background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01));
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.glass-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Header */
+.main-header {
+    padding: 2rem;
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.main-header h1 {
+    margin-bottom: 0.5rem;
+}
+
+.main-header p {
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+    letter-spacing: 1px;
+}
+
+/* Sunline Signature Logo Style */
+.sunline-logo-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transform: skewX(-12deg); /* 傾斜戰鬥感 */
+    padding: 10px 20px;
+}
+.sunline-subtitle-top {
+    color: #000;
+    font-weight: 900;
+    font-family: 'Inter', 'Arial Black', Impact, sans-serif;
+    font-size: 0.95rem;
+    letter-spacing: 2px;
+    -webkit-text-stroke: 0; /* 徹底拔除向內描邊 */
+    /* 利用精確的多重陰影向外繪製 1.5px 白色邊框，確保內部全黑 */
+    text-shadow: 
+        -1.5px -1.5px 0 #fff, 0 -1.5px 0 #fff, 1.5px -1.5px 0 #fff,
+        -1.5px  0     0 #fff,                  1.5px  0     0 #fff,
+        -1.5px  1.5px 0 #fff, 0  1.5px 0 #fff, 1.5px  1.5px 0 #fff,
+        0 4px 10px rgba(0,0,0,0.7);
+    margin-bottom: 5px; /* 移除重疊，與主標題保持安全距離 */
+    z-index: 2;
+    position: relative;
+    align-self: flex-start;
+    margin-left: 10%;
+}
+.sunline-title {
+    color: #000;
+    font-size: 6rem; /* 再稍微放大強調重裝視覺 */
+    font-weight: 900;
+    margin: 0;
+    padding: 0;
+    letter-spacing: -3px;
+    line-height: 1.05;
+    -webkit-text-stroke: 0; /* 徹底拔除向內描邊 */
+    /* 製作 3px 的極厚實外白色貼紙裁切邊，並加上底部微立體厚度 */
+    text-shadow: 
+        -3px -3px 0 #fff,  0 -3px 0 #fff,  3px -3px 0 #fff,
+        -3px  0    0 #fff,                 3px  0    0 #fff,
+        -3px  3px  0 #fff, 0  3px 0 #fff,  3px  3px  0 #fff,
+        -3px  5px  0 #fff, 0  5px 0 #fff,  3px  5px  0 #fff, 
+        0 15px 35px rgba(0,0,0,0.9);
+    transform: scaleX(1.15); 
+    z-index: 1;
+    position: relative;
+}
+.sunline-subtitle-bottom {
+    color: #000;
+    font-weight: 900;
+    font-size: 1.8rem;
+    letter-spacing: 3px;
+    -webkit-text-stroke: 0;
+    /* 2px 厚度外部包邊 */
+    text-shadow: 
+        -2px -2px 0 #fff, 0 -2px 0 #fff, 2px -2px 0 #fff,
+        -2px  0    0 #fff,               2px  0    0 #fff,
+        -2px  2px  0 #fff, 0  2px 0 #fff, 2px  2px  0 #fff,
+        0 8px 15px rgba(0,0,0,0.8);
+    margin-top: -12px; 
+    z-index: 3;
+    position: relative;
+    align-self: flex-end;
+    margin-right: 15%;
+}
+
+/* Live Dashboard Mesh Grid */
+.live-dashboard {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* 強制三欄 */
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+}
+
+.api-card {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--glass-border);
+    padding-bottom: 1rem;
+}
+
+.card-header .icon {
+    font-size: 1.8rem;
+    margin-right: 0.8rem;
+}
+
+.card-header h3 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #e2e8f0;
+}
+
+.metric {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.8rem;
+    font-size: 0.95rem;
+}
+
+.metric .label {
+    color: var(--text-secondary);
+}
+
+.metric .value {
+    font-weight: 600;
+}
+
+.metric .highlight {
+    color: var(--primary-color);
+    font-size: 1.1rem;
+}
+
+.status-badge {
+    margin-top: auto;
+    padding: 0.8rem;
+    border-radius: 8px;
+    text-align: center;
+    font-weight: 700;
+    background: rgba(255, 255, 255, 0.05);
+    margin-top: 1rem;
+}
+
+/* Custom Status Colors applied via JS */
+.status-green { background: rgba(34, 197, 94, 0.15); color: var(--accent-green); border: 1px solid rgba(34, 197, 94, 0.3); }
+.status-yellow { background: rgba(234, 179, 8, 0.15); color: var(--accent-yellow); border: 1px solid rgba(234, 179, 8, 0.3); }
+.status-red { background: rgba(239, 68, 68, 0.15); color: var(--accent-red); border: 1px solid rgba(239, 68, 68, 0.3); }
+
+/* River Sections */
+.river-sections h2 {
+    font-size: 1.8rem;
+    margin-bottom: 1.5rem;
+    border-left: 4px solid var(--primary-color);
+    padding-left: 1rem;
+}
+
+.river-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* 釣點清單維持兩欄 */
+    gap: 2rem;
+}
+
+.river-card {
+    padding: 2rem;
+}
+
+.river-card h3 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.river-type {
+    font-size: 0.8rem;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: var(--primary-color);
+    color: #000;
+    font-weight: bold;
+}
+
+.river-desc {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+}
+
+.spots-list {
+    list-style: none;
+}
+
+.spot-item {
+    background: rgba(0, 0, 0, 0.2);
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    border-left: 2px solid var(--glass-border);
+    transition: border-color 0.2s;
+}
+
+.spot-item:hover {
+    border-left-color: var(--primary-color);
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.spot-name {
+    font-weight: 600;
+    color: #e2e8f0;
+    margin-bottom: 4px;
+}
+
+.spot-meta {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+/* 移除原本的響應式換行設定 */
+/*.river-grid { grid-template-columns: 1fr; }*/
+
+.spot-desc-text {
+    font-size: 0.85rem;
+    color: #94a3b8;
+    line-height: 1.4;
+    margin: 6px 0;
+    padding-left: 8px;
+    border-left: 2px solid rgba(56, 189, 248, 0.3);
+}
+
+.badge {
+    font-size: 0.75rem;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-weight: bold;
+    display: inline-block;
+}
+
+.decoy-badge {
+    background: rgba(245, 158, 11, 0.2);
+    color: #f59e0b;
+    border: 1px solid rgba(245, 158, 11, 0.4);
+}
+
+/* Basin Tabs Navigation */
+.basin-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 20px; /* 增加按鈕間距 */
+    margin-top: 15px;
+    margin-bottom: 30px;
+    flex-wrap: wrap; /* 如果螢幕太小允許換行 */
+}
+
+.tab-btn {
+    background: rgba(255, 255, 255, 0.08); /* 稍微調亮基礎背景 */
+    border: 2px solid rgba(255, 255, 255, 0.15);
+    color: #cbd5e1; /* 原本是較暗的 94a3b8，調亮一點 */
+    padding: 14px 32px; /* 大幅增加左右與上下點擊範圍 */
+    border-radius: 30px; /* 更圓潤的膠囊狀 */
+    font-size: 1.25rem; /* 字體大幅放大 */
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* 讓按鈕動態更Ｑ彈 */
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3); /* 增加立體陰影 */
+}
+
+.tab-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 12px rgba(0, 0, 0, 0.4);
+}
+
+.tab-btn.active {
+    background: rgba(56, 189, 248, 0.25);
+    border: 2px solid rgba(56, 189, 248, 0.9); /* 高亮邊框 */
+    color: #ffffff; /* 變成純白 */
+    font-weight: 800;
+    box-shadow: 0 0 25px rgba(56, 189, 248, 0.4), inset 0 0 15px rgba(56, 189, 248, 0.2);
+    transform: scale(1.05);
+}
+
+/* Inline Report Button */
+.inline-report-btn {
+    background: linear-gradient(135deg, #f59e0b, #ef4444);
+    border: 1px solid rgba(239, 68, 68, 0.5);
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.inline-report-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(239, 68, 68, 0.6);
+    background: linear-gradient(135deg, #fcd34d, #f87171);
+}
+
+/* Modal Overlay */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(5px);
+    z-index: 2000;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background: rgba(15, 23, 42, 0.85); /* 深藍色毛玻璃 */
+    width: 90%;
+    max-width: 500px;
+    padding: 30px;
+    position: relative;
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 15px;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.close-btn {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 1.5rem;
+    color: #cbd5e1;
+    cursor: pointer;
+}
+.close-btn:hover { color: #fff; }
+
+.form-group {
+    margin-bottom: 15px;
+}
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    color: #94a3b8;
+    font-size: 0.9rem;
+}
+.form-group input {
+    width: 100%;
+    padding: 10px;
+    background: rgba(0,0,0,0.5);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: #fff;
+    border-radius: 8px;
+}
+
+/* Reports Carousel */
+.reports-carousel {
+    display: flex;
+    overflow-x: auto;
+    gap: 20px;
+    padding: 10px 0 20px 0;
+    scroll-snap-type: x mandatory;
+}
+.reports-carousel::-webkit-scrollbar {
+    height: 8px;
+}
+.reports-carousel::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.2);
+    border-radius: 4px;
+}
+
+.report-card {
+    min-width: 300px;
+    max-width: 300px;
+    background: #000;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    overflow: hidden;
+    scroll-snap-align: start;
+    flex-shrink: 0;
+}
+.report-card img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+}
+.report-card-body {
+    padding: 15px;
+}
+.report-meta {
+    font-size: 0.8rem;
+    color: #94a3b8;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+}
+.tackle-tag {
+    display: inline-block;
+    font-size: 0.75rem;
+    padding: 4px 8px;
+    margin-right: 5px;
+    margin-bottom: 5px;
+    background: rgba(56, 189, 248, 0.15);
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    border-radius: 4px;
+    color: #7dd3fc;
+}
+

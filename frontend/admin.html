@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1200">
+    <title>站長專署 | 追星雷達管理後台</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Noto+Sans+TC:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        body { background: #020617; }
+        .admin-header {
+            padding: 2rem;
+            border-bottom: 2px solid #38bdf8;
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            color: #f8fafc;
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .admin-table th, .admin-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .admin-table th {
+            background: rgba(56, 189, 248, 0.2);
+            color: #38bdf8;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+        }
+        .report-preview-img {
+            width: 80px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 4px; border: 1px solid rgba(255,255,255,0.2);
+        }
+        .status-pill {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+        .status-pending { background: #f59e0b; color: #000; }
+        .status-approved { background: #10b981; color: #fff; }
+        
+        .btn {
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            margin-right: 5px;
+            transition: 0.2s;
+        }
+        .btn-approve { background: #10b981; color: #fff; }
+        .btn-approve:hover { background: #059669; }
+        .btn-delete { background: #ef4444; color: #fff; }
+        .btn-delete:hover { background: #dc2626; }
+        
+        #auth-overlay {
+            position: fixed;
+            top:0; left:0; width:100%; height:100%;
+            background: #020617;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+    <div id="auth-overlay">
+        <h1 class="sunline-title" style="font-size: 3rem;">ADMIN ACCESS</h1>
+        <p style="color: #94a3b8; margin-bottom: 2rem;">請輸入站長通關密碼</p>
+        <input type="password" id="admin-pass" style="padding: 12px 20px; font-size: 1.2rem; border-radius: 8px; border: 1px solid #38bdf8; background: #0f172a; color: #fff; width: 300px; text-align: center;">
+        <button onclick="window.checkAuth()" style="margin-top: 20px; padding: 12px 40px; background: #38bdf8; color: #000; font-weight: bold; border:none; border-radius: 8px; cursor: pointer;">進入戰情室後台</button>
+    </div>
+
+    <div class="container" id="admin-main" style="display: none;">
+        <header class="admin-header">
+            <div>
+                <h1 style="color: #38bdf8; margin: 0;">🛡️ 追星雷達 | 站長審理區</h1>
+                <p style="color: #64748b; margin: 5px 0 0 0;">管理流域戰報與釣場誠信</p>
+            </div>
+            <a href="/" style="color: #94a3b8; text-decoration: none; border: 1px solid #94a3b8; padding: 5px 15px; border-radius: 20px; font-size: 0.8rem;">⬅ 回首頁</a>
+        </header>
+
+        <nav style="margin-bottom: 2rem; display: flex; gap: 10px;">
+            <button class="nav-tab active" id="tab-reports-btn" onclick="window.switchTab('reports')" style="padding: 10px 20px; background: rgba(56, 189, 248, 0.2); border: 1px solid #38bdf8; color: #38bdf8; border-radius: 8px; cursor: pointer; font-weight: bold;">📝 戰報審核</button>
+            <button class="nav-tab" id="tab-spots-btn" onclick="window.switchTab('spots')" style="padding: 10px 20px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2); color: #94a3b8; border-radius: 8px; cursor: pointer; font-weight: bold;">📍 釣場地圖管理</button>
+        </nav>
+
+        <!-- Reports Tab -->
+        <div id="section-reports">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>照片</th>
+                        <th>戰報 ID</th>
+                        <th>流域/釣點</th>
+                        <th>作者</th>
+                        <th>狀態</th>
+                        <th>操作項</th>
+                    </tr>
+                </thead>
+                <tbody id="admin-reports-table">
+                    <!-- Data will be injected here -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Spots Tab -->
+        <div id="section-spots" style="display: none;">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>釣點 ID</th>
+                        <th>釣點名稱</th>
+                        <th>描述</th>
+                        <th>Google Map 連結</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id="admin-spots-table">
+                    <!-- Spots will be injected here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="admin.js"></script>
+</body>
+</html>

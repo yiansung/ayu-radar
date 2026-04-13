@@ -1,0 +1,52 @@
+[
+  {
+    "id": "R001",
+    "basin_id": "pinglin",
+    "spot_name": "坪安潭營地",
+    "author": "阿源師",
+    "date": "2026-04-05 14:30",
+    "status": "approved",
+    "content": "剛下過陣雨水略濁，但活性極高。靠右側急流區巨石邊緣有魚群聚集，索餌意願強！後來遇到打雷就趕快先收竿了。附註：今日君記食堂魚媒很健康。",
+    "photo_urls": ["https://images.unsplash.com/photo-1508215885820-4585e5610208?w=800&h=500&fit=crop"],
+    "catch": {
+      "count": "18",
+      "max_size": "24"
+    },
+    "tackle": {
+      "rod": "Shimano 先掛 NJ 90",
+      "line": "0.05號 太子金屬線",
+      "hook": "7.5號 四本錨"
+    },
+    "telemetry": {
+      "water_level": "106.89m",
+      "turbidity": "略濁可釣 🟡",
+      "weather_desc": "雷陣雨",
+      "temp": "31°C"
+    }
+  },
+  {
+    "id": "R002",
+    "basin_id": "wulai",
+    "spot_name": "福山段",
+    "author": "釣魚新手阿明",
+    "date": "2026-04-07 09:15",
+    "status": "approved",
+    "content": "水非常清澈底層石況一覽無遺，但水流真的很急。今天用比較粗的尼龍線去牽引，效果還行。上面林蔭多滿涼爽的。",
+    "photo_urls": ["https://images.unsplash.com/photo-1437482078695-73f5ca6c96e2?w=800&h=500&fit=crop"],
+    "catch": {
+      "count": "5",
+      "max_size": "19"
+    },
+    "tackle": {
+      "rod": "Daiwa 銀影競技",
+      "line": "0.175號 尼龍線",
+      "hook": "7.0號 三本錨"
+    },
+    "telemetry": {
+      "water_level": "105.50m",
+      "turbidity": "溪水清澈 🟢",
+      "weather_desc": "晴時多雲",
+      "temp": "26°C"
+    }
+  }
+]

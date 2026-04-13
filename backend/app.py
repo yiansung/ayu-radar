@@ -653,19 +653,21 @@ def seed_data_from_json():
                 seed_data = json.load(f)
             
             print("🌱 Seeding database from data.json...")
-            for b_data in seed_data:
+            for b_id, b_info in seed_data.items():
+                # 使用字典鍵作為 id，basin_system 作為 name
                 basin = Basin(
-                    id=b_data['id'],
-                    name=b_data['name'],
-                    weather_station_id=b_data.get('weather_station_id'),
-                    weather_station_name=b_data.get('weather_station_name')
+                    id=b_id,
+                    name=b_info.get('basin_system', b_id),
+                    weather_station_id=b_info.get('weather_station_id'),
+                    weather_station_name=b_info.get('weather_station_name')
                 )
                 db.session.add(basin)
                 
-                for s_data in b_data.get('sections', []):
+                # 遍歷流域下的所有河段
+                for s_data in b_info.get('river_sections', []):
                     section = RiverSection(
-                        basin_id=basin.id,
-                        section_id=s_data['id'],
+                        basin_id=b_id,
+                        section_id=s_data['section_id'],
                         name=s_data['name']
                     )
                     db.session.add(section)

@@ -524,7 +524,7 @@ body {
         justify-content: center;
     }
     .header-bg {
-        background-position: center 25%; /* 微調焦點，確保主角與魚頭不被裁切 */
+        background-position: 85% 25%; /* 畫面重心往右偏移，讓右側的香魚頭不被裁切 */
     }
     .tab-btn {
         padding: 10px 20px;

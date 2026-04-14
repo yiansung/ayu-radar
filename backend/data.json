@@ -33,7 +33,7 @@
         "characteristics": "以「峽谷與壺穴」地形著稱，溪床佈滿巨大的岩石和深潭，視覺上非常壯麗。",
         "fishing_spots": [
           { "spot_name": "大林橋", "spot_desc": "石槽溪上游段，入秋後水量穩定，魚體雖偏小但活動力依然強勁。", "access_info": "橋頭旁小徑下切", "business_status": "24h 開放", "has_decoy": false, "map_url": "https://www.google.com/maps/search/?api=1&query=坪林大林橋" },
-          { "spot_name": "鶯子瀨", "spot_desc": "落差極大的急瀨區，水溫較主流低，挑戰性高，適合老手攻略。", "access_info": "高低落差大，需防滑裝備", "business_status": "24h 開放", "has_decoy": false, "map_url": "https://www.google.com/maps/search/?api=1&query=坪林鶯子瀨" },
+          { "spot_name": "鶯子瀨橋", "spot_desc": "位於坪林區北勢溪幹流，橋下兩側呈現急瀨與深潭交錯的優質地形，含氧量足。這裡專攻流溝或石縫常有不錯的大物出水，極適合老手挑戰", "access_info": "橋旁有明顯步道可直接步行下切，水邊濕滑強烈建議著菜瓜布溯溪鞋", "business_status": "野場 24h 開放 (請愛護環境)", "has_decoy": false, "decoy_vendor": "", "map_url": "https://www.google.com/maps/search/?api=1&query=新北市坪林區鶯子瀨橋" },
           { "spot_name": "平堵橋", "spot_desc": "橋墩附近有穩定深潭，周圍是大塊岩盤，極度適合釣客觀察魚花。", "access_info": "路口停車步行進入", "business_status": "24h 開放", "has_decoy": false, "map_url": "https://www.google.com/maps/search/?api=1&query=坪林平堵橋" },
           { "spot_name": "青山農場", "spot_desc": "溪床佈滿鮮綠色青苔，生態系豐富，周邊環境由農場維護良好。", "access_info": "經農場園區進入", "business_status": "營業中 (08:00-17:30)", "has_decoy": false, "map_url": "https://www.google.com/maps/search/?api=1&query=坪林青山農場" },
           { "spot_name": "綠野山林", "spot_desc": "被群山環繞的幽靜營地，水域較為封閉，適合悠閒的定點釣法。", "access_info": "營地安全下切", "business_status": "營業中 (09:00-18:00)", "has_decoy": false, "map_url": "https://www.google.com/maps/search/?api=1&query=坪林綠野山林" }

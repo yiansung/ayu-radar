@@ -517,10 +517,14 @@ body {
         margin-right: 5%;
     }
     .main-header {
-        padding: 4.5rem 1rem;
+        padding: 6rem 1rem;
+        min-height: 45vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
     }
     .header-bg {
-        background-position: center 30%; /* 將焦點往上移，露出魚頭 */
+        background-position: center 25%; /* 微調焦點，確保主角與魚頭不被裁切 */
     }
     .tab-btn {
         padding: 10px 20px;

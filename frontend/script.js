@@ -193,8 +193,8 @@ async function fetchAndRenderBasin() {
         fetchTraffic();
         fetchWeather(data.weather_station_id);
         
-        // 取主流來當水情指標
-        const main_station = data.river_sections.find(s => s.type.includes('主流'))?.water_level_station_id || 'UNKNOWN';
+        // 取主流來當水情指標 (增加空值保護防止崩潰)
+        const main_station = (data.river_sections || []).find(s => (s.type || '').includes('主流'))?.water_level_station_id || 'UNKNOWN';
         fetchWater(main_station);
         
         // 更新表單釣點選單

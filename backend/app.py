@@ -663,65 +663,100 @@ def admin_manage_spot(spot_id):
 def seed_data_from_json():
     """從 data.json 注入初始流域與釣點資料（若資料庫為空）"""
     try:
-        if Basin.query.count() == 0:
-            # Try multiple path possibilities for cloud environment
-            json_paths = [
-                os.path.join(basedir, 'data.json'),
-                os.path.join(os.path.abspath(os.curdir), 'backend', 'data.json'),
-                os.path.join(os.path.abspath(os.curdir), 'data.json')
-            ]
-            
-            json_path = None
-            for p in json_paths:
-                if os.path.exists(p):
-                    json_path = p
-                    break
-            
-            if not json_path:
-                print(f"⚠️ data.json NOT found, using DEFAULT FALLBACK SEED.")
-                # 硬編碼預備資料，防止 data.json 讀取失敗
-                fallback_basins = [
-                    {"id": "pinglin", "name": "坪林流域・戰情室", "weather_id": "C0A520", "sections": [
-                        {"id": "P01_MAIN", "name": "北勢溪主流"}
-                    ]},
-                    {"id": "wulai", "name": "烏來福山・戰情室", "weather_id": "C0A560", "sections": [
-                        {"id": "W01_MAIN", "name": "南勢溪主流"}
-                    ]}
-                ]
-                for b in fallback_basins:
-                    basin = Basin(id=b['id'], name=b['name'], weather_station_id=b['weather_id'])
-                    db.session.add(basin)
-                    for s in b['sections']:
-                        section = RiverSection(basin_id=b['id'], section_id=s['id'], name=s['name'])
-                        db.session.add(section)
+        with app.app_context():
+            # 強制注入邏輯：若發現舊資料結構不對，則清空重來
+            sample_section = RiverSection.query.first()
+            if sample_section and not sample_section.type:
+                print("🧹 Detected malformed legacy data, clearing for fresh seed...")
+                RiverSection.query.delete()
+                Basin.query.delete()
                 db.session.commit()
-                return
-            
-            print(f"🌱 Seeding database from: {json_path}")
-            with open(json_path, 'r', encoding='utf-8') as f:
-                seed_data = json.load(f)
-            
-            print("🌱 Seeding database from data.json...")
-            for b_id, b_info in seed_data.items():
-                # 使用字典鍵作為 id，basin_system 作為 name
-                basin = Basin(
-                    id=b_id,
-                    name=b_info.get('basin_system', b_id),
-                    weather_station_id=b_info.get('weather_station_id'),
-                    weather_station_name=b_info.get('weather_station_name')
-                )
-                db.session.add(basin)
+
+            if Basin.query.count() == 0:
+                # Try multiple path possibilities for cloud environment
+                json_paths = [
+                    os.path.join(basedir, 'data.json'),
+                    os.path.join(os.path.abspath(os.curdir), 'backend', 'data.json'),
+                    os.path.join(os.path.abspath(os.curdir), 'data.json')
+                ]
                 
-                # 遍歷流域下的所有河段
-                for s_data in b_info.get('river_sections', []):
-                    section = RiverSection(
-                        basin_id=b_id,
-                        section_id=s_data['section_id'],
-                        name=s_data['name']
+                json_path = None
+                for p in json_paths:
+                    if os.path.exists(p):
+                        json_path = p
+                        break
+                
+                if not json_path:
+                    print(f"⚠️ data.json NOT found, using ROBUST DEFAULT FALLBACK SEED.")
+                    fallback_basins = {
+                        "pinglin": {
+                            "name": "坪林流域・戰情室", 
+                            "weather_id": "C0A520", 
+                            "sections": [
+                                {"id": "P01_MAIN", "name": "北勢溪主流段", "type": "主流 (Mainstream)", "station": "1140H048"}
+                            ]
+                        },
+                        "wulai": {
+                            "name": "烏來福山・戰情室", 
+                            "weather_id": "C0A560", 
+                            "sections": [
+                                {"id": "W01_MAIN", "name": "南勢溪主流段", "type": "主流 (Mainstream)", "station": "1140H096"}
+                            ]
+                        }
+                    }
+                    for b_id, b_info in fallback_basins.items():
+                        basin = Basin(id=b_id, name=b_info['name'], weather_station_id=b_info['weather_id'])
+                        db.session.add(basin)
+                        for s in b_info['sections']:
+                            section = RiverSection(
+                                basin_id=b_id, 
+                                section_id=s['id'], 
+                                name=s['name'], 
+                                type=s['type'],
+                                water_level_station_id=s['station']
+                            )
+                            db.session.add(section)
+                    db.session.commit()
+                    return
+                
+                print(f"🌱 Seeding database from: {json_path}")
+                with open(json_path, 'r', encoding='utf-8') as f:
+                    seed_data = json.load(f)
+                
+                for b_id, b_info in seed_data.items():
+                    basin = Basin(
+                        id=b_id,
+                        name=b_info.get('basin_system', b_id),
+                        weather_station_id=b_info.get('weather_station_id'),
+                        weather_station_name=b_info.get('weather_station_name')
                     )
-                    db.session.add(section)
-            db.session.commit()
-            print("✅ Seeding complete.")
+                    db.session.add(basin)
+                    
+                    for s_data in b_info.get('river_sections', []):
+                        section = RiverSection(
+                            basin_id=b_id,
+                            section_id=s_data['section_id'],
+                            name=s_data['name'],
+                            type=s_data.get('type', '主流'),
+                            water_level_station_id=s_data.get('water_level_station_id', 'UNKNOWN'),
+                            characteristics=s_data.get('characteristics', '')
+                        )
+                        db.session.add(section)
+                        
+                        for spot_data in s_data.get('fishing_spots', []):
+                            spot = FishingSpot(
+                                section_id=section.id,
+                                spot_name=spot_data['spot_name'],
+                                spot_desc=spot_data.get('spot_desc', ''),
+                                access_info=spot_data.get('access_info', ''),
+                                business_status=spot_data.get('business_status', ''),
+                                has_decoy=spot_data.get('has_decoy', False),
+                                decoy_vendor=spot_data.get('decoy_vendor', ''),
+                                map_url=spot_data.get('map_url', '')
+                            )
+                            db.session.add(spot)
+                db.session.commit()
+                print("✅ Seeding complete with full Fishing Spots.")
     except Exception as e:
         print(f"❌ Seeding error: {e}")
 

@@ -439,11 +439,19 @@ def get_live_traffic(basin_id):
 @app.route('/api/live/weather/<station_id>', methods=['GET'])
 def get_live_weather(station_id):
     """零延遲獲取情報中心的氣象資料"""
-    # 支援別名對應
-    sid = station_id
-    if station_id == "C0A530": sid = "pinglin"
-    elif station_id == "C2A560": sid = "wulai"
+    # 支援別名對應與模糊匹配
+    sid = None
+    if station_id in ["C0A530", "C0A520", "pinglin"]: sid = "pinglin"
+    elif station_id in ["C2A560", "C0A560", "wulai"]: sid = "wulai"
     
+    if not sid:
+        return jsonify({
+            "station_name": "未選擇流域",
+            "current_temp": "--",
+            "weather_desc": "請先切換流域",
+            "last_update": "--"
+        }), 400
+
     data = INTELLIGENCE_CENTER["weather"].get(sid)
     if not data:
         # 初次啟動備援
@@ -451,8 +459,14 @@ def get_live_weather(station_id):
         result = fetch_official_weather(cwa_id)
         if result: return jsonify(result)
         return jsonify({
-            "station_id": station_id, "current_temp": 24.0, "weather_desc": "雲多 (啟動中...)", 
+            "station_name": "氣象觀測站",
+            "current_temp": 24.0,
+            "weather_desc": "連線中...", 
             "weather_warning": "☢️ 正在建立戰術連線，請稍後幾秒...",
+            "feels_like_temp": 24.0,
+            "humidity": "-",
+            "wind_speed": "-",
+            "uv_index": "-",
             "last_update": time.strftime("%H:%M")
         })
     return jsonify(data)
@@ -460,14 +474,19 @@ def get_live_weather(station_id):
 @app.route('/api/live/water/<station_id>', methods=['GET'])
 def get_live_water(station_id):
     """零延遲獲取情報中心的水情資料"""
-    # 根據 station_id 判斷是哪個流域的資料
-    sid = "pinglin" if "048" in station_id or station_id == "pinglin" else "wulai"
+    # 根據 station_id 判斷是哪個流域的資料 (坪林橋: 1140H048, 福山橋: 1140H096)
+    sid = None
+    if "048" in station_id or "pinglin" in station_id.lower(): sid = "pinglin"
+    elif "096" in station_id or "wulai" in station_id.lower(): sid = "wulai"
+    
+    if not sid:
+        return jsonify({"station_name": "未知站點", "current_level_m": "-"}), 400
+    
     data = INTELLIGENCE_CENTER["water"].get(sid)
     if not data:
-        # 建立一個基礎結構防止前端報錯
         return jsonify({
             "station_name": "水文觀測站",
-            "current_level_m": "載入中",
+            "current_level_m": "-",
             "warning_level_m": "-",
             "rain_accumulated_1h_mm": 0,
             "rain_accumulated_24h_mm": 0,
@@ -476,6 +495,30 @@ def get_live_water(station_id):
             "last_update": time.strftime("%H:%M")
         })
     return jsonify(data)
+
+
+@app.route('/api/debug/basin_status', methods=['GET'])
+def get_basin_status():
+    """診斷專用：查看各流域在資料庫中的統計狀態"""
+    try:
+        basins = Basin.query.all()
+        status = []
+        for b in basins:
+            sections = RiverSection.query.filter_by(basin_id=b.id).all()
+            total_spots = sum(len(s.spots) for s in sections)
+            status.append({
+                "id": b.id,
+                "name": b.name,
+                "sections": len(sections),
+                "spots": total_spots
+            })
+        return jsonify({
+            "total_basins": len(basins),
+            "basins": status,
+            "db_path": app.config['SQLALCHEMY_DATABASE_URI']
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 @app.route('/api/reports/<basin_id>', methods=['GET'])
@@ -666,7 +709,7 @@ def seed_data_from_json():
         with app.app_context():
             # 強制注入邏輯：若發現舊資料結構不對，則清空重來
             sample_section = RiverSection.query.first()
-            if sample_section and not sample_section.type:
+            if sample_section and not sample_section.section_type:
                 print("🧹 Detected malformed legacy data, clearing for fresh seed...")
                 RiverSection.query.delete()
                 Basin.query.delete()
@@ -691,14 +734,14 @@ def seed_data_from_json():
                     fallback_basins = {
                         "pinglin": {
                             "name": "坪林流域・戰情室", 
-                            "weather_id": "C0A520", 
+                            "weather_id": "C0A530", 
                             "sections": [
                                 {"id": "P01_MAIN", "name": "北勢溪主流段", "type": "主流 (Mainstream)", "station": "1140H048"}
                             ]
                         },
                         "wulai": {
                             "name": "烏來福山・戰情室", 
-                            "weather_id": "C0A560", 
+                            "weather_id": "C2A560", 
                             "sections": [
                                 {"id": "W01_MAIN", "name": "南勢溪主流段", "type": "主流 (Mainstream)", "station": "1140H096"}
                             ]
@@ -712,7 +755,7 @@ def seed_data_from_json():
                                 basin_id=b_id, 
                                 section_id=s['id'], 
                                 name=s['name'], 
-                                type=s['type'],
+                                section_type=s['type'],
                                 water_level_station_id=s['station']
                             )
                             db.session.add(section)
@@ -737,11 +780,12 @@ def seed_data_from_json():
                             basin_id=b_id,
                             section_id=s_data['section_id'],
                             name=s_data['name'],
-                            type=s_data.get('type', '主流'),
+                            section_type=s_data.get('type', '主流'),
                             water_level_station_id=s_data.get('water_level_station_id', 'UNKNOWN'),
                             characteristics=s_data.get('characteristics', '')
                         )
                         db.session.add(section)
+                        db.session.flush() # Ensure section.id is populated for spots
                         
                         for spot_data in s_data.get('fishing_spots', []):
                             spot = FishingSpot(

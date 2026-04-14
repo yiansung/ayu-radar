@@ -189,6 +189,21 @@ async function fetchAndRenderBasin() {
         const res = await fetch(`${API_BASE}/fishing_spots/${currentBasinId}`);
         const data = await res.json();
         
+        const listContainer = document.getElementById('river-list');
+        
+        if (!data || !data.river_sections || data.river_sections.length === 0) {
+            console.error('No river sections found for basin:', currentBasinId);
+            listContainer.innerHTML = `
+                <div class="glass-card" style="padding: 30px; text-align: center; border: 1px dashed rgba(239, 68, 68, 0.4); background: rgba(239, 68, 68, 0.05);">
+                    <div style="font-size: 2rem; margin-bottom: 10px;">⚠️</div>
+                    <h3 style="color: #fca5a5; margin-bottom: 10px;">資料庫尚未就緒</h3>
+                    <p style="color: #94a3b8; font-size: 0.9rem;">偵測到流域資料庫為空，可能正在進行雲端熱啟動或資料初始化中。</p>
+                    <button onclick="window.fetchAndRenderBasin()" style="margin-top: 15px; padding: 8px 16px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; color: #fff; cursor: pointer;">🔄 點擊手動重新整理</button>
+                </div>
+            `;
+            return;
+        }
+        
         // Fetch Live APIs
         fetchTraffic();
         fetchWeather(data.weather_station_id);
@@ -256,14 +271,14 @@ async function fetchAndRenderBasin() {
                             </div>
                             ` : ''}
                         </div>
-                            
-                        </div>
                     </li>
                 `}).join('');
             }
 
             card.innerHTML = `
-                <h3>${section.name} <span class="river-type">${section.type.includes('主流') ? '主流' : '支流'}</span></h3>
+            const isMainstream = (section.type || '').includes('主流');
+            card.innerHTML = `
+                <h3>${section.name} <span class="river-type">${isMainstream ? '主流' : '支流'}</span></h3>
                 <p class="river-desc">${section.characteristics}</p>
                 <ul class="spots-list">
                     ${spotsHtml}
@@ -274,7 +289,10 @@ async function fetchAndRenderBasin() {
 
     } catch (e) {
         console.error('Basin Fetch Error:', e);
-        document.getElementById('basin-title').textContent = '⚠️ 無法載入流域資料，請確認後端是否重啟';
+        const listContainer = document.getElementById('river-list');
+        if (listContainer) {
+            listContainer.innerHTML = '<div class="glass-card" style="padding:20px; color:#fca5a5;">⚠️ 無法載入流域資料，請檢查後端連線。</div>';
+        }
     }
 }
 

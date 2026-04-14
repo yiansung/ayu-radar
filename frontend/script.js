@@ -420,6 +420,11 @@ window.submitReport = async function(e) {
             formData.append('photos', photoInput.files[i]);
         }
     }
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '⏳ 上傳中請稍候...';
+    }
 
     try {
         const res = await fetch(`${API_BASE}/reports`, {
@@ -433,6 +438,11 @@ window.submitReport = async function(e) {
     } catch (err) {
         console.error(err);
         alert("送出失敗，請檢查網路連線或照片大小");
+    } finally {
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '送出等待站長審核';
+        }
     }
 }
 

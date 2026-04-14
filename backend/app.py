@@ -531,6 +531,23 @@ def get_basin_status():
         return jsonify({"error": str(e)}), 500
 
 
+@app.route('/api/debug/force_reseed', methods=['POST'])
+def force_reseed():
+    """強制清空資料庫並重新從 data.json 讀取釣區與釣點"""
+    try:
+        # 1. 清空舊資料
+        FishingSpot.query.delete()
+        RiverSection.query.delete()
+        Basin.query.delete()
+        db.session.commit()
+        # 2. 重新執行 Seed
+        seed_data_from_json()
+        return jsonify({"status": "success", "message": "資料庫已重置並重新從 data.json 讀取完畢。"})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+
+
 @app.route('/api/reports/<basin_id>', methods=['GET'])
 def get_reports(basin_id):
     """回傳該流域審核通過的戰報 (從資料庫)"""

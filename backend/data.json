@@ -12,6 +12,7 @@
         "water_level_station_name": "坪林橋",
         "characteristics": "適合大規格的香魚，也是「友釣法」的主戰場。溪床較開闊，亂石堆多，是香魚極佳的棲息地。",
         "fishing_spots": [
+          { "spot_name": "長青營地", "spot_desc": "坪林資深老牌營地，鄰近北勢溪主流，水深適中且潭瀨交錯，是夏日友釣的優質熱點。", "access_info": "營地步道便捷下切", "business_status": "營業中 (需事先預約)", "has_decoy": false, "map_url": "https://www.google.com/maps/search/?api=1&query=坪林長青露營區" },
           { "spot_name": "茶香地營地", "spot_desc": "知名老牌營地，淺灘與急瀨交錯，腹地平穩適合新手下竿。", "access_info": "露營區下切", "business_status": "營業中 (08:00-18:00)", "has_decoy": false },
           { "spot_name": "坪安潭營地", "spot_desc": "主流經典釣點，常有破尺大物藏匿於深潭邊緣的巨石群中。", "access_info": "營地安全下切", "business_status": "營業中 (08:00-17:00)", "has_decoy": true },
           { "spot_name": "虎寮潭露營區", "spot_desc": "近虎寮潭吊橋，水深變化大，適合長竿探尋底層障礙物。", "access_info": "難度低", "business_status": "營業中 (09:00-18:00)", "has_decoy": false },

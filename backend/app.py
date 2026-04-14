@@ -643,12 +643,24 @@ def admin_manage_spot(spot_id):
 def seed_data_from_json():
     """從 data.json 注入初始流域與釣點資料（若資料庫為空）"""
     try:
-        if Basin.query.count() == 0:
-            json_path = os.path.join(basedir, 'data.json')
-            if not os.path.exists(json_path):
-                print("⚠️ data.json not found, skipping seed.")
+            # Try multiple path possibilities for cloud environment
+            json_paths = [
+                os.path.join(basedir, 'data.json'),
+                os.path.join(os.path.abspath(os.curdir), 'backend', 'data.json'),
+                os.path.join(os.path.abspath(os.curdir), 'data.json')
+            ]
+            
+            json_path = None
+            for p in json_paths:
+                if os.path.exists(p):
+                    json_path = p
+                    break
+            
+            if not json_path:
+                print(f"⚠️ data.json NOT found in any searched paths: {json_paths}")
                 return
             
+            print(f"🌱 Seeding database from: {json_path}")
             with open(json_path, 'r', encoding='utf-8') as f:
                 seed_data = json.load(f)
             

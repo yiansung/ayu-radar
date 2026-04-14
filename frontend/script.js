@@ -326,12 +326,17 @@ async function fetchReports() {
         
         let html = '';
         reports.forEach(r => {
+            // Populate lightbox data
+            if (r.photo_urls && r.photo_urls.length > 0) {
+                window.lightboxData[r.id] = r.photo_urls;
+            }
+
             const telemetry = r.telemetry || {};
             let photosHtml = '';
             if (r.photo_urls && r.photo_urls.length > 0) {
                 photosHtml = '<div class="report-photos-grid">';
-                r.photo_urls.forEach(url => {
-                    photosHtml += `<img src="${url}" alt="戰報照片" onclick="window.openLightbox('${url}')">`;
+                r.photo_urls.forEach((url, idx) => {
+                    photosHtml += `<img src="${url}" alt="戰報照片" onclick="window.openLightbox('${r.id}', ${idx})">`;
                 });
                 photosHtml += '</div>';
             } else {
@@ -350,7 +355,7 @@ async function fetchReports() {
                             ${r.content || ''}
                         </p>
                         <div style="margin-bottom: 10px;">
-                            <span class="badge" style="background: rgba(34,197,94,0.2); color:#4ade80;">🐟 ${r.catch?.count || '--'}</span>
+                            <span class="badge" style="background: rgba(34,197,94,0.2); color:#4ade80;">🐟 釣獲總數 ${r.catch?.count || '--'}</span>
                             <span class="badge" style="background: rgba(234,179,8,0.2); color:#fde047;">📏 最大 ${r.catch?.max_size || '--'}cm</span>
                         </div>
                         <div style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px;">
@@ -464,19 +469,40 @@ function renderTrendChart(history) {
     const levelData = history.levels.map(l => l.value);
     const rainData = history.rains.map(l => l.value);
 
-    // Lightbox Logic
-    window.openLightbox = function(url) {
+    // Lightbox Data map
+    window.lightboxData = {};
+
+    window.openLightbox = function(reportId, startIndex) {
         const modal = document.getElementById('lightbox-modal');
         const img = document.getElementById('lightbox-img');
-        if (modal && img) {
-            img.src = url;
+        if (modal && img && window.lightboxData[reportId]) {
+            modal.currentReportId = reportId;
+            modal.currentIndex = startIndex;
+            img.src = window.lightboxData[reportId][startIndex];
             modal.style.display = 'flex';
         }
     }
     
+    window.nextLightboxImage = function(e, direction) {
+        if (e) e.stopPropagation();
+        const modal = document.getElementById('lightbox-modal');
+        const img = document.getElementById('lightbox-img');
+        const reportId = modal.currentReportId;
+        if (!reportId || !window.lightboxData[reportId]) return;
+        
+        const urls = window.lightboxData[reportId];
+        let nextIdx = modal.currentIndex + direction;
+        
+        if (nextIdx >= urls.length) nextIdx = 0; // wrap around
+        if (nextIdx < 0) nextIdx = urls.length - 1;
+        
+        modal.currentIndex = nextIdx;
+        img.src = urls[nextIdx];
+    }
+    
     window.closeLightbox = function(e) {
-        // Prevent closing if clicked directly on image
-        if (e && e.target.id === 'lightbox-img') return;
+        // Prevent closing if clicked directly on image or buttons
+        if (e && (e.target.id === 'lightbox-img' || e.target.classList.contains('lightbox-btn'))) return;
         const modal = document.getElementById('lightbox-modal');
         if (modal) modal.style.display = 'none';
     }

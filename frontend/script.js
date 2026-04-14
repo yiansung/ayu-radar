@@ -377,9 +377,16 @@ async function fetchReports() {
     }
 }
 
+let isSubmittingReport = false;
+
 // 提交表單邏輯
 window.submitReport = async function(e) {
     e.preventDefault();
+    if (isSubmittingReport) {
+        console.log("阻擋重複提交");
+        return;
+    }
+    isSubmittingReport = true;
     
     // 安全地抓取當下儀表板數值
     const waterLevel = document.getElementById('h-level')?.textContent || '未知';
@@ -439,6 +446,7 @@ window.submitReport = async function(e) {
         console.error(err);
         alert("送出失敗，請檢查網路連線或照片大小");
     } finally {
+        isSubmittingReport = false;
         if (submitBtn) {
             submitBtn.disabled = false;
             submitBtn.innerHTML = '送出等待站長審核';

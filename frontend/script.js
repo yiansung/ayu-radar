@@ -469,43 +469,6 @@ function renderTrendChart(history) {
     const levelData = history.levels.map(l => l.value);
     const rainData = history.rains.map(l => l.value);
 
-    // Lightbox Data map
-    window.lightboxData = {};
-
-    window.openLightbox = function(reportId, startIndex) {
-        const modal = document.getElementById('lightbox-modal');
-        const img = document.getElementById('lightbox-img');
-        if (modal && img && window.lightboxData[reportId]) {
-            modal.currentReportId = reportId;
-            modal.currentIndex = startIndex;
-            img.src = window.lightboxData[reportId][startIndex];
-            modal.style.display = 'flex';
-        }
-    }
-    
-    window.nextLightboxImage = function(e, direction) {
-        if (e) e.stopPropagation();
-        const modal = document.getElementById('lightbox-modal');
-        const img = document.getElementById('lightbox-img');
-        const reportId = modal.currentReportId;
-        if (!reportId || !window.lightboxData[reportId]) return;
-        
-        const urls = window.lightboxData[reportId];
-        let nextIdx = modal.currentIndex + direction;
-        
-        if (nextIdx >= urls.length) nextIdx = 0; // wrap around
-        if (nextIdx < 0) nextIdx = urls.length - 1;
-        
-        modal.currentIndex = nextIdx;
-        img.src = urls[nextIdx];
-    }
-    
-    window.closeLightbox = function(e) {
-        // Prevent closing if clicked directly on image or buttons
-        if (e && (e.target.id === 'lightbox-img' || e.target.classList.contains('lightbox-btn'))) return;
-        const modal = document.getElementById('lightbox-modal');
-        if (modal) modal.style.display = 'none';
-    }
 
     if (trendChart) {
         trendChart.destroy();
@@ -568,6 +531,45 @@ function renderTrendChart(history) {
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
     console.log("🚀 Ayu Radar System Initializing...");
+    
+    // Lightbox Data map
+    window.lightboxData = {};
+
+    window.openLightbox = function(reportId, startIndex) {
+        const modal = document.getElementById('lightbox-modal');
+        const img = document.getElementById('lightbox-img');
+        if (modal && img && window.lightboxData[reportId]) {
+            modal.currentReportId = reportId;
+            modal.currentIndex = startIndex;
+            img.src = window.lightboxData[reportId][startIndex];
+            modal.style.display = 'flex';
+        }
+    }
+    
+    window.nextLightboxImage = function(e, direction) {
+        if (e) e.stopPropagation();
+        const modal = document.getElementById('lightbox-modal');
+        const img = document.getElementById('lightbox-img');
+        const reportId = modal.currentReportId;
+        if (!reportId || !window.lightboxData[reportId]) return;
+        
+        const urls = window.lightboxData[reportId];
+        let nextIdx = modal.currentIndex + direction;
+        
+        if (nextIdx >= urls.length) nextIdx = 0; // wrap around
+        if (nextIdx < 0) nextIdx = urls.length - 1;
+        
+        modal.currentIndex = nextIdx;
+        img.src = urls[nextIdx];
+    }
+    
+    window.closeLightbox = function(e) {
+        // Prevent closing if clicked directly on image or buttons
+        if (e && (e.target.id === 'lightbox-img' || e.target.classList.contains('lightbox-btn'))) return;
+        const modal = document.getElementById('lightbox-modal');
+        if (modal) modal.style.display = 'none';
+    }
+
     fetchAndRenderBasin();
     setInterval(fetchAndRenderBasin, 120000); // 2分鐘輪詢一次
 });

@@ -280,7 +280,7 @@ async function fetchAndRenderBasin() {
                             </div>
                             ${spot.map_url ? `
                             <div style="margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 12px;">
-                                <a href="${spot.map_url}" target="_blank" style="display: block; width: 100%; padding: 10px; background: #38bdf8; color: #000; text-decoration: none; text-align: center; border-radius: 8px; font-weight: 900; font-size: 0.9rem;">🏎️ GOOGLE MAP 直達導航</a>
+                                <a href="${spot.map_url}" target="_blank" style="display: block; width: 100%; padding: 10px; background: #38bdf8; color: #000; text-decoration: none; text-align: center; border-radius: 8px; font-weight: 900; font-size: 0.9rem;">🏎️ GOOGLE 直達導航</a>
                             </div>
                             ` : ''}
                         </div>

@@ -12,16 +12,16 @@
         "water_level_station_name": "坪林橋",
         "characteristics": "適合大規格的香魚，也是「友釣法」的主戰場。溪床較開闊，亂石堆多，是香魚極佳的棲息地。",
         "fishing_spots": [
-          { "spot_name": "長青營地", "spot_desc": "坪林資深老牌營地，鄰近北勢溪主流，水深適中且潭瀨交錯，是夏日友釣的優質熱點。", "access_info": "營地步道便捷下切", "business_status": "營業中 (需事先預約)", "has_decoy": false, "map_url": "https://www.google.com/maps/search/?api=1&query=坪林長青露營區" },
-          { "spot_name": "茶香地營地", "spot_desc": "知名老牌營地，淺灘與急瀨交錯，腹地平穩適合新手下竿。", "access_info": "露營區下切", "business_status": "營業中 (08:00-18:00)", "has_decoy": false },
-          { "spot_name": "坪安潭營地", "spot_desc": "主流經典釣點，常有破尺大物藏匿於深潭邊緣的巨石群中。", "access_info": "營地安全下切", "business_status": "營業中 (08:00-17:00)", "has_decoy": true },
-          { "spot_name": "虎寮潭露營區", "spot_desc": "近虎寮潭吊橋，水深變化大，適合長竿探尋底層障礙物。", "access_info": "難度低", "business_status": "營業中 (09:00-18:00)", "has_decoy": false },
-          { "spot_name": "新石門營地", "spot_desc": "水流急促的平瀨區，岩石青苔附著良好，香魚索餌意願高。", "access_info": "營地步道下切", "business_status": "營業中 (08:30-17:30)", "has_decoy": false },
-          { "spot_name": "映象之旅", "spot_desc": "平緩易達的營地，周邊有豐富的水中石區，魚貨來源穩定。", "access_info": "平緩易達", "business_status": "營業中 (07:00-18:00)", "has_decoy": true },
-          { "spot_name": "清泉水頭營地", "spot_desc": "腹地廣大、水面開闊，適合群體作釣與進行大範圍探索。", "access_info": "腹地廣大", "business_status": "營業中 (08:00-17:00)", "has_decoy": false },
-          { "spot_name": "大舌湖營地", "spot_desc": "大曲流地形，流水平緩深邃，適合晨昏時段挑戰大型香魚。", "access_info": "需經過蜿蜒山路", "business_status": "營業中 (09:00-17:00)", "has_decoy": false },
-          { "spot_name": "過水橋", "spot_desc": "溪床平坦的經典水域，橋下兩側常有中小型體型密集的香魚群。", "access_info": "路邊停車直接下水", "business_status": "24h 開放 (自然水域)", "has_decoy": false },
-          { "spot_name": "闊瀨吊橋", "spot_desc": "風景秀麗的吊橋段，岩盤地形容易卡底，但具備極高的大魚潛力。", "access_info": "從吊橋旁小徑下切", "business_status": "24h 開放 (自然水域)", "has_decoy": false }
+          { "spot_name": "長青營地", "spot_desc": "坪林資深老牌營地越北勢溪主流，水深適中且潭瀨交錯，是夏日友釣的優質熱點。", "access_info": "營地步道便捷下切", "business_status": "營業中 (需事先預約)", "has_decoy": false, "map_url": "https://www.google.com/maps/search/?api=1&query=坪林長青露營區" },
+          { "spot_name": "茶香地營地", "spot_desc": "知名老牌營地，淺灘與急瀨交錯，腹地平穩適合新手下竿。", "access_info": "露營區下切", "business_status": "營業中 (08:00-18:00)", "has_decoy": false, "map_url": "https://www.google.com/maps/search/?api=1&query=坪林茶香地營地" },
+          { "spot_name": "坪安潭營地", "spot_desc": "主流經典釣點，常有破尺大物藏匿於深潭邊緣的巨石群中。", "access_info": "營地安全下切", "business_status": "營業中 (08:00-17:00)", "has_decoy": true, "map_url": "https://www.google.com/maps/search/?api=1&query=坪安潭營地" },
+          { "spot_name": "虎寮潭露營區", "spot_desc": "近虎寮潭吊橋，水深變化大，適合長竿探尋底層障礙物。", "access_info": "難度低", "business_status": "營業中 (09:00-18:00)", "has_decoy": false, "map_url": "https://www.google.com/maps/search/?api=1&query=虎寮潭露營區" },
+          { "spot_name": "新石門營地", "spot_desc": "水流急促的平瀨區，岩石青苔附著良好，香魚索餌意願高。", "access_info": "營地步道下切", "business_status": "營業中 (08:30-17:30)", "has_decoy": false, "map_url": "https://www.google.com/maps/search/?api=1&query=坪林新石門營地" },
+          { "spot_name": "映象之旅", "spot_desc": "平緩易達的營地，周邊有豐富的水中石區，魚貨來源穩定。", "access_info": "平緩易達", "business_status": "營業中 (07:00-18:00)", "has_decoy": true, "map_url": "https://www.google.com/maps/search/?api=1&query=坪林映象之旅" },
+          { "spot_name": "清泉水頭營地", "spot_desc": "腹地廣大、水面開闊，適合群體作釣與進行大範圍探索。", "access_info": "腹地廣大", "business_status": "營業中 (08:00-17:00)", "has_decoy": false, "map_url": "https://www.google.com/maps/search/?api=1&query=清泉水頭營地" },
+          { "spot_name": "大舌湖營地", "spot_desc": "大曲流地形，流水平緩深邃，適合晨昏時段挑戰大型香魚。", "access_info": "需經過蜿蜒山路", "business_status": "營業中 (09:00-17:00)", "has_decoy": false, "map_url": "https://www.google.com/maps/search/?api=1&query=大舌湖營地" },
+          { "spot_name": "過水橋", "spot_desc": "溪床平坦的經典水域，橋下兩側常有中小型體型密集的香魚群。", "access_info": "路邊停車直接下水", "business_status": "24h 開放 (自然水域)", "has_decoy": false, "map_url": "https://www.google.com/maps/search/?api=1&query=坪林過水橋" },
+          { "spot_name": "闊瀨吊橋", "spot_desc": "風景秀麗的吊橋段，岩盤地形容易卡底，但具備極高的大魚潛力。", "access_info": "從吊橋旁小徑下切", "business_status": "24h 開放 (自然水域)", "has_decoy": false, "map_url": "https://www.google.com/maps/search/?api=1&query=闊瀨吊橋" }
         ]
       },
       {
@@ -32,11 +32,11 @@
         "water_level_station_name": "石槽",
         "characteristics": "以「峽谷與壺穴」地形著稱，溪床佈滿巨大的岩石和深潭，視覺上非常壯麗。",
         "fishing_spots": [
-          { "spot_name": "大林橋", "spot_desc": "石槽溪上游段，入秋後水量穩定，魚體雖偏小但活動力依然強勁。", "access_info": "橋頭旁小徑下切", "business_status": "24h 開放", "has_decoy": false },
-          { "spot_name": "鶯子瀨", "spot_desc": "落差極大的急瀨區，水溫較主流低，挑戰性高，適合老手攻略。", "access_info": "高低落差大，需防滑裝備", "business_status": "24h 開放", "has_decoy": false },
-          { "spot_name": "平堵橋", "spot_desc": "橋墩附近有穩定深潭，周圍是大塊岩盤，極度適合釣客觀察魚花。", "access_info": "路口停車步行進入", "business_status": "24h 開放", "has_decoy": false },
-          { "spot_name": "青山農場", "spot_desc": "溪床佈滿鮮綠色青苔，生態系豐富，周邊環境由農場維護良好。", "access_info": "經農場園區進入", "business_status": "營業中 (08:00-17:30)", "has_decoy": false },
-          { "spot_name": "綠野山林", "spot_desc": "被群山環繞的幽靜營地，水域較為封閉，適合悠閒的定點釣法。", "access_info": "營地安全下切", "business_status": "營業中 (09:00-18:00)", "has_decoy": false }
+          { "spot_name": "大林橋", "spot_desc": "石槽溪上游段，入秋後水量穩定，魚體雖偏小但活動力依然強勁。", "access_info": "橋頭旁小徑下切", "business_status": "24h 開放", "has_decoy": false, "map_url": "https://www.google.com/maps/search/?api=1&query=坪林大林橋" },
+          { "spot_name": "鶯子瀨", "spot_desc": "落差極大的急瀨區，水溫較主流低，挑戰性高，適合老手攻略。", "access_info": "高低落差大，需防滑裝備", "business_status": "24h 開放", "has_decoy": false, "map_url": "https://www.google.com/maps/search/?api=1&query=坪林鶯子瀨" },
+          { "spot_name": "平堵橋", "spot_desc": "橋墩附近有穩定深潭，周圍是大塊岩盤，極度適合釣客觀察魚花。", "access_info": "路口停車步行進入", "business_status": "24h 開放", "has_decoy": false, "map_url": "https://www.google.com/maps/search/?api=1&query=坪林平堵橋" },
+          { "spot_name": "青山農場", "spot_desc": "溪床佈滿鮮綠色青苔，生態系豐富，周邊環境由農場維護良好。", "access_info": "經農場園區進入", "business_status": "營業中 (08:00-17:30)", "has_decoy": false, "map_url": "https://www.google.com/maps/search/?api=1&query=坪林青山農場" },
+          { "spot_name": "綠野山林", "spot_desc": "被群山環繞的幽靜營地，水域較為封閉，適合悠閒的定點釣法。", "access_info": "營地安全下切", "business_status": "營業中 (09:00-18:00)", "has_decoy": false, "map_url": "https://www.google.com/maps/search/?api=1&query=坪林綠野山林" }
         ]
       }
     ]
@@ -54,14 +54,14 @@
         "water_level_station_name": "福山",
         "characteristics": "水質清澈、水流強勁，峽谷與巨石錯落，是烏來地區最具代表性的香魚獵場。",
         "fishing_spots": [
-          { "spot_name": "屈尺壩", "spot_desc": "壩下水流湍急，含氧量充足，是活性極高的熱門作釣區。", "access_info": "壩堤旁步道下切", "business_status": "24h 開放", "has_decoy": false },
-          { "spot_name": "小坑橋", "spot_desc": "橋下涵洞附近常有大型香魚翻滾，但地形落差較大需小心。", "access_info": "橋頭兩側草叢下切", "business_status": "24h 開放", "has_decoy": false },
-          { "spot_name": "龜山橋", "spot_desc": "著名的寬廣急瀨區，水溫穩定，適合以長竿大範圍搜索。", "access_info": "由橋旁產業道路進入", "business_status": "24h 開放", "has_decoy": true, "decoy_vendor": "君記食堂" },
-          { "spot_name": "紅河谷", "spot_desc": "奇岩怪石林立的風景名勝區，深潭隱蔽性高。", "access_info": "風景區步道旁下放", "business_status": "24h 開放", "has_decoy": false },
-          { "spot_name": "內洞森林遊樂區", "spot_desc": "瀑布區周邊富含負離子，水勢強勁落差大，挑戰性極高。", "access_info": "經遊樂區步道周邊", "business_status": "配合園區開放 (08:00-17:00)", "has_decoy": false },
-          { "spot_name": "福山段", "spot_desc": "極度上游的水域，水質極佳，非常考驗涉水與找魚技巧。", "access_info": "多段陡峭小徑下切", "business_status": "24h 開放", "has_decoy": false },
-          { "spot_name": "哈盆古道", "spot_desc": "長途跋涉後的秘境，生態保存極度完整，魚群不受驚擾。", "access_info": "挑戰級長途步行", "business_status": "24h 開放", "has_decoy": false },
-          { "spot_name": "哈盆營地", "spot_desc": "深入山林腹地的紮營點，適合具備露營經驗的多日戰略。", "access_info": "步行進入", "business_status": "24h 開放", "has_decoy": false }
+          { "spot_name": "屈尺壩", "spot_desc": "壩下水流湍急，含氧量充足，是活性極高的熱門作釣區。", "access_info": "壩堤旁步道下切", "business_status": "24h 開放", "has_decoy": false, "map_url": "https://www.google.com/maps/search/?api=1&query=屈尺壩" },
+          { "spot_name": "小坑橋", "spot_desc": "橋下涵洞附近常有大型香魚翻滾，但地形落差較大需小心。", "access_info": "橋頭兩側草叢下切", "business_status": "24h 開放", "has_decoy": false, "map_url": "https://www.google.com/maps/search/?api=1&query=烏來小坑橋" },
+          { "spot_name": "龜山橋", "spot_desc": "著名的寬廣急瀨區，水溫穩定，適合以長竿大範圍搜索。", "access_info": "由橋旁產業道路進入", "business_status": "24h 開放", "has_decoy": true, "decoy_vendor": "君記食堂", "map_url": "https://www.google.com/maps/search/?api=1&query=烏來龜山橋" },
+          { "spot_name": "紅河谷", "spot_desc": "奇岩怪石林立的風景名勝區，深潭隱蔽性高。", "access_info": "風景區步道旁下放", "business_status": "24h 開放", "has_decoy": false, "map_url": "https://www.google.com/maps/search/?api=1&query=烏來紅河谷" },
+          { "spot_name": "內洞森林遊樂區", "spot_desc": "瀑布區周邊富含負離子，水勢強勁落差大，挑戰性極高。", "access_info": "經遊樂區步道周邊", "business_status": "配合園區開放 (08:00-17:00)", "has_decoy": false, "map_url": "https://www.google.com/maps/search/?api=1&query=內洞森林遊樂區" },
+          { "spot_name": "福山段", "spot_desc": "極度上遊的水域，水質極佳，非常考驗涉水與找魚技巧。", "access_info": "多段陡峭小徑下切", "business_status": "24h 開放", "has_decoy": false, "map_url": "https://www.google.com/maps/search/?api=1&query=烏來福山村" },
+          { "spot_name": "哈盆古道", "spot_desc": "長途跋涉後的秘境，生態保存極度完整，魚群不受驚擾。", "access_info": "挑戰級長途步行", "business_status": "24h 開放", "has_decoy": false, "map_url": "https://www.google.com/maps/search/?api=1&query=哈盆古道入口" },
+          { "spot_name": "哈盆營地", "spot_desc": "深入山林腹地的紮營點，適合具備露營經驗的多日戰略。", "access_info": "步行進入", "business_status": "24h 開放", "has_decoy": false, "map_url": "https://www.google.com/maps/search/?api=1&query=哈盆營地" }
         ]
       },
       {
@@ -72,8 +72,8 @@
         "water_level_station_name": "無官方水文站",
         "characteristics": "沿路風景優美林蔭茂密，水流相對主流平緩，是躲避日曬的高級潛力分流。",
         "fishing_spots": [
-          { "spot_name": "孝義管制站段", "spot_desc": "需辦理入山手續，水域乾淨無污染。", "access_info": "管制閘門後沿線下切", "business_status": "需申請入山", "has_decoy": false },
-          { "spot_name": "桶後林道沿線", "spot_desc": "隨處可見平緩水潭與小急流，靈活度高。", "access_info": "路邊尋找下切點", "business_status": "24h 開放", "has_decoy": false }
+          { "spot_name": "孝義管制站段", "spot_desc": "需辦理入山手續，水域乾淨無污染。", "access_info": "管制閘門後沿線下切", "business_status": "需申請入山", "has_decoy": false, "map_url": "https://www.google.com/maps/search/?api=1&query=孝義派出所" },
+          { "spot_name": "桶後林道沿線", "spot_desc": "隨處可見平緩水潭與小急流，靈活度高。", "access_info": "路邊尋找下切點", "business_status": "24h 開放", "has_decoy": false, "map_url": "https://www.google.com/maps/search/?api=1&query=桶後林道" }
         ]
       }
     ]

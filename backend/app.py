@@ -185,7 +185,8 @@ def get_spots(basin_id):
                     "access_info": spot.access_info,
                     "business_status": spot.business_status,
                     "has_decoy": spot.has_decoy,
-                    "decoy_vendor": spot.decoy_vendor
+                    "decoy_vendor": spot.decoy_vendor,
+                    "map_url": spot.map_url
                 })
             
             sections_data.append({

@@ -275,7 +275,6 @@ async function fetchAndRenderBasin() {
                 `}).join('');
             }
 
-            card.innerHTML = `
             const isMainstream = (section.type || '').includes('主流');
             card.innerHTML = `
                 <h3>${section.name} <span class="river-type">${isMainstream ? '主流' : '支流'}</span></h3>

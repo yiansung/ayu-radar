@@ -46,9 +46,10 @@ body {
 }
 
 .container {
-    width: 1200px; /* 固定寬度，不隨銀幕縮放 */
+    max-width: 1200px; /* 改為最大寬度 */
+    width: 100%;
     margin: 0 auto;
-    padding: 2rem;
+    padding: 1rem; /* 減少邊距 */
 }
 
 /* Glassmorphism Utilities */
@@ -492,5 +493,43 @@ body {
     border: 1px solid rgba(56, 189, 248, 0.3);
     border-radius: 4px;
     color: #7dd3fc;
+}
+/* --- Mobile Responsiveness --- */
+@media (max-width: 1024px) {
+    .live-dashboard {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .live-dashboard {
+        grid-template-columns: 1fr;
+    }
+    .river-grid {
+        grid-template-columns: 1fr;
+    }
+    .sunline-title {
+        font-size: 3.5rem;
+    }
+    .sunline-subtitle-bottom {
+        font-size: 1.2rem;
+        margin-right: 5%;
+    }
+    .main-header {
+        padding: 4rem 1rem;
+    }
+    .tab-btn {
+        padding: 10px 20px;
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .sunline-title {
+        font-size: 2.8rem;
+    }
+    .sunline-subtitle-top {
+        font-size: 0.7rem;
+    }
 }
 

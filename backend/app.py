@@ -139,6 +139,26 @@ def serve_index():
 def serve_admin():
     return app.send_static_file('admin.html')
 
+@app.route('/api/debug/status')
+def debug_status():
+    """診斷接口：查看雲端環境狀態"""
+    import os
+    try:
+        files = os.listdir('.')
+        backend_files = os.listdir('backend') if os.path.exists('backend') else []
+        basin_count = Basin.query.count()
+        section_count = RiverSection.query.count()
+        return jsonify({
+            "cwd": os.getcwd(),
+            "basedir": basedir,
+            "root_files": files,
+            "backend_files": backend_files,
+            "db_counts": {"basins": basin_count, "sections": section_count},
+            "env": {"CWA_TOKEN_SET": bool(CWA_TOKEN)}
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)})
+
 # --- API Endpoints ---
 @app.route('/api/basins', methods=['GET'])
 def get_basins():
@@ -658,7 +678,23 @@ def seed_data_from_json():
                     break
             
             if not json_path:
-                print(f"⚠️ data.json NOT found in any searched paths: {json_paths}")
+                print(f"⚠️ data.json NOT found, using DEFAULT FALLBACK SEED.")
+                # 硬編碼預備資料，防止 data.json 讀取失敗
+                fallback_basins = [
+                    {"id": "pinglin", "name": "坪林流域・戰情室", "weather_id": "C0A520", "sections": [
+                        {"id": "P01_MAIN", "name": "北勢溪主流"}
+                    ]},
+                    {"id": "wulai", "name": "烏來福山・戰情室", "weather_id": "C0A560", "sections": [
+                        {"id": "W01_MAIN", "name": "南勢溪主流"}
+                    ]}
+                ]
+                for b in fallback_basins:
+                    basin = Basin(id=b['id'], name=b['name'], weather_station_id=b['weather_id'])
+                    db.session.add(basin)
+                    for s in b['sections']:
+                        section = RiverSection(basin_id=b['id'], section_id=s['id'], name=s['name'])
+                        db.session.add(section)
+                db.session.commit()
                 return
             
             print(f"🌱 Seeding database from: {json_path}")

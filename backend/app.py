@@ -454,22 +454,28 @@ def get_live_weather(station_id):
 
     data = INTELLIGENCE_CENTER["weather"].get(sid)
     if not data:
-        # 初次啟動備援
+        # 初次啟動備援 (同步外部資料)
         cwa_id = "C0A530" if sid == "pinglin" else "C2A560"
         result = fetch_official_weather(cwa_id)
-        if result: return jsonify(result)
+        if result: 
+            safe_result = {k: (v if v is not None else "--") for k, v in result.items()}
+            return jsonify(safe_result)
+        
         return jsonify({
             "station_name": "氣象觀測站",
             "current_temp": 24.0,
             "weather_desc": "連線中...", 
             "weather_warning": "☢️ 正在建立戰術連線，請稍後幾秒...",
             "feels_like_temp": 24.0,
-            "humidity": "-",
-            "wind_speed": "-",
-            "uv_index": "-",
+            "humidity": "--",
+            "wind_speed": "--",
+            "uv_index": "--",
             "last_update": time.strftime("%H:%M")
         })
-    return jsonify(data)
+        
+    # 確保所有欄位不為 None
+    safe_data = {k: (v if v is not None else "--") for k, v in data.items()}
+    return jsonify(safe_data)
 
 @app.route('/api/live/water/<station_id>', methods=['GET'])
 def get_live_water(station_id):
@@ -485,16 +491,20 @@ def get_live_water(station_id):
     data = INTELLIGENCE_CENTER["water"].get(sid)
     if not data:
         return jsonify({
+            "station_id": sid,
             "station_name": "水文觀測站",
-            "current_level_m": "-",
-            "warning_level_m": "-",
+            "current_level_m": "--",
+            "warning_level_m": "--",
             "rain_accumulated_1h_mm": 0,
             "rain_accumulated_24h_mm": 0,
-            "status": "連線中 ⚪",
-            "turbidity_status": "讀取中 ⚪",
+            "status": "數據同步中... ⚪",
+            "turbidity_status": "連線中... ⚪",
             "last_update": time.strftime("%H:%M")
         })
-    return jsonify(data)
+    
+    # 確保所有欄位不為 None
+    safe_data = {k: (v if v is not None else "--") for k, v in data.items()}
+    return jsonify(safe_data)
 
 
 @app.route('/api/debug/basin_status', methods=['GET'])

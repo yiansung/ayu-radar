@@ -7,24 +7,21 @@ function setStatusBadge(elementId, statusText) {
     const el = document.getElementById(elementId);
     if (!el) return;
     el.className = 'status-badge'; // Reset
-    const safeText = statusText || '未知';
-    el.textContent = safeText;
+    el.textContent = statusText;
     
-    if (safeText.includes('🟢')) el.classList.add('status-green');
-    else if (safeText.includes('🔴')) el.classList.add('status-red');
-    else if (safeText.includes('🟡')) el.classList.add('status-yellow');
+    if (statusText.includes('🟢')) el.classList.add('status-green');
+    else if (statusText.includes('🔴')) el.classList.add('status-red');
+    else if (statusText.includes('🟡')) el.classList.add('status-yellow');
     else el.style.background = 'rgba(255,255,255,0.1)';
 }
 
 // 切換流域
 window.switchBasin = function(basinId) {
     if (currentBasinId === basinId) return;
-    console.log(`🔄 Switching Basin to: ${basinId}`);
     
     // Update Tab UI
     document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-    const targetTab = document.getElementById(`tab-${basinId}`);
-    if (targetTab) targetTab.classList.add('active');
+    document.getElementById(`tab-${basinId}`).classList.add('active');
     
     // Set State & Reload
     currentBasinId = basinId;
@@ -46,8 +43,6 @@ async function fetchTraffic() {
         const data = await res.json();
         
         let container = document.getElementById('traffic-container');
-        if (!container) return;
-        
         let routesHtml = '';
         
         // 渲染交通管制與施工等特殊訊息
@@ -59,27 +54,23 @@ async function fetchTraffic() {
             routesHtml += `</div>`;
         }
         
-        if (data.routes) {
-            data.routes.forEach(r => {
-                const statusStr = r.status || '';
-                let colorClass = statusStr.includes('🟢') ? 'highlight' : (statusStr.includes('🔴') ? 'text-red' : 'text-yellow');
-                routesHtml += `
-                    <div style="margin-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.5rem;">
-                        <div class="metric" style="color: #38bdf8;"><strong>${r.route_name || '未知路段'}</strong></div>
-                        <div class="metric"><span class="label">車速</span><span class="value ${colorClass}">${r.avg_speed_kmh || '--'} km/h</span></div>
-                        <div class="metric"><span class="label">狀態</span><span class="value">${statusStr}</span></div>
-                    </div>
-                `;
-            });
-        }
+        data.routes.forEach(r => {
+            let colorClass = r.status.includes('🟢') ? 'highlight' : (r.status.includes('🔴') ? 'text-red' : 'text-yellow');
+            routesHtml += `
+                <div style="margin-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.5rem;">
+                    <div class="metric" style="color: #38bdf8;"><strong>${r.route_name}</strong></div>
+                    <div class="metric"><span class="label">車速</span><span class="value ${colorClass}">${r.avg_speed_kmh} km/h</span></div>
+                    <div class="metric"><span class="label">狀態</span><span class="value">${r.status}</span></div>
+                </div>
+            `;
+        });
         
-        routesHtml += `<div style="text-align:right; font-size: 0.75rem; color:#64748b;">最後更新: ${data.last_update || '--'}</div>`;
+        routesHtml += `<div style="text-align:right; font-size: 0.75rem; color:#64748b;">最後更新: ${data.last_update}</div>`;
         container.innerHTML = routesHtml;
 
     } catch (e) {
         console.error('Traffic API Error:', e);
-        const el = document.getElementById('traffic-container');
-        if (el) el.innerHTML = '<div class="status-badge status-red">交通資訊暫不可用 🔴</div>';
+        document.getElementById('traffic-container').innerHTML = '<div class="status-badge status-red">連線失敗 🔴</div>';
     }
 }
 
@@ -87,57 +78,51 @@ async function fetchTraffic() {
 async function fetchWeather(stationId) {
     try {
         const res = await fetch(`${API_BASE}/live/weather/${stationId}`);
-        if (!res.ok) throw new Error('Weather API 400');
         const data = await res.json();
 
-        document.getElementById('w-temp').textContent = `${data.current_temp || '--'}°C`;
-        const desc = data.weather_desc || '未知';
-        document.getElementById('w-desc').textContent = desc;
-        document.getElementById('w-feels').textContent = `${data.feels_like_temp || '--'}°C`;
-        document.getElementById('w-humidity').textContent = data.humidity || '--';
-        document.getElementById('w-wind').textContent = data.wind_speed || '--';
-        document.getElementById('w-uv').textContent = data.uv_index || '--';
+        document.getElementById('w-temp').textContent = `${data.current_temp}°C`;
+        document.getElementById('w-desc').textContent = data.weather_desc;
+        document.getElementById('w-feels').textContent = `${data.feels_like_temp}°C`;
+        document.getElementById('w-humidity').textContent = data.humidity;
+        document.getElementById('w-wind').textContent = data.wind_speed;
+        document.getElementById('w-uv').textContent = data.uv_index;
         
         // Icon logic
         let icon = '☀️';
-        if (desc.includes('雨')) icon = '🌧️';
-        else if (desc.includes('雲')) icon = '⛅';
-        else if (desc.includes('陰')) icon = '☁️';
+        if (data.weather_desc.includes('雨')) icon = '🌧️';
+        else if (data.weather_desc.includes('雲')) icon = '⛅';
+        else if (data.weather_desc.includes('陰')) icon = '☁️';
         document.getElementById('w-icon').textContent = icon;
         
-        // 渲染天氣警示訊息
+        // 渲染天氣警示訊息 (如：雷陣雨、烈日高溫)
         let warnContainer = document.getElementById('weather-warning-container');
-        if (warnContainer) {
-            if (data.weather_warning) {
-                const warnTextAttr = data.weather_warning || '';
-                let warnColor = warnTextAttr.includes('雷') ? 'rgba(239, 68, 68, 0.15)' : 'rgba(249, 115, 22, 0.15)';
-                let warnBorder = warnTextAttr.includes('雷') ? 'rgba(239, 68, 68, 0.3)' : 'rgba(249, 115, 22, 0.3)';
-                let warnText = warnTextAttr.includes('雷') ? '#fca5a5' : '#fdba74';
-                warnContainer.innerHTML = `<div style="margin-bottom: 15px; padding: 0.6rem; background: ${warnColor}; border: 1px solid ${warnBorder}; border-radius: 8px; color: ${warnText}; font-size: 0.85rem; line-height: 1.5; font-weight: bold; text-align: center;">${data.weather_warning}</div>`;
-            } else {
-                warnContainer.innerHTML = '';
-            }
-            // 渲染策略建議
-            renderStrategicForecast(data);
+        if (data.weather_warning) {
+            let warnColor = data.weather_warning.includes('雷') ? 'rgba(239, 68, 68, 0.15)' : 'rgba(249, 115, 22, 0.15)';
+            let warnBorder = data.weather_warning.includes('雷') ? 'rgba(239, 68, 68, 0.3)' : 'rgba(249, 115, 22, 0.3)';
+            let warnText = data.weather_warning.includes('雷') ? '#fca5a5' : '#fdba74';
+            warnContainer.innerHTML = `<div style="margin-bottom: 15px; padding: 0.6rem; background: ${warnColor}; border: 1px solid ${warnBorder}; border-radius: 8px; color: ${warnText}; font-size: 0.85rem; line-height: 1.5; font-weight: bold; text-align: center;">${data.weather_warning}</div>`;
+        } else {
+            warnContainer.innerHTML = '';
         }
         
-        document.getElementById('w-update').textContent = `觀測站: ${data.station_name || '未知'} | 更新: ${data.last_update || '--'}`;
+        document.getElementById('w-update').textContent = `觀測站: ${data.station_name} | 更新: ${data.last_update}`;
+        
+        // --- 48H 戰術預估邏輯 (模擬分析) ---
+        renderStrategicForecast(data);
         
     } catch (e) {
         console.error('Weather API Error:', e);
         document.getElementById('w-temp').textContent = 'X';
-        document.getElementById('w-desc').textContent = '連結中...';
     }
 }
 
 function renderStrategicForecast(liveWeather) {
     const container = document.getElementById('weather-warning-container');
-    if (!container) return;
-    
-    const desc = liveWeather.weather_desc || '';
-    let rainProb = desc.includes('雨') ? 85 : 20;
+    // 模擬未來 48 小時降雨機率與建議
+    let rainProb = liveWeather.weather_desc.includes('雨') ? 85 : 20;
     let advice = rainProb > 30 ? "⚠️ 明日預期降雨，溪水恐起水，建議縮短作釣時間。" : "✅ 氣候穩定，預期未來 48h 水位持平，適合長征作釣。";
     
+    // 將建議以戰術風格顯示
     const adviceHtml = `
         <div style="margin-bottom: 10px; padding: 10px; background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 8px; font-size: 0.8rem;">
             <div style="color: #38bdf8; font-weight: bold; margin-bottom: 5px;">📡 48H 戰術評估</div>
@@ -145,14 +130,14 @@ function renderStrategicForecast(liveWeather) {
             <div style="margin-top: 5px; color: #94a3b8;">預期降雨率: ${rainProb}%</div>
         </div>
     `;
+    // 先清空原本的 warning，再重新組合（保持 order）
     container.innerHTML = adviceHtml + container.innerHTML;
 }
 
-// 獲取水文站資料
+// 獲取水文站資料 (含降雨與濁度)
 async function fetchWater(stationId) {
     try {
         const res = await fetch(`${API_BASE}/live/water/${stationId}`);
-        if (!res.ok) throw new Error('Water API 400');
         const data = await res.json();
 
         if (data.station_id === "UNKNOWN") {
@@ -166,11 +151,11 @@ async function fetchWater(stationId) {
             return;
         }
 
-        document.getElementById('h-station').textContent = data.station_name || '未知';
-        document.getElementById('h-level').textContent = `${data.current_level_m || '-'} m`;
-        document.getElementById('h-warn').textContent = `${data.warning_level_m || '-'} m`;
-        document.getElementById('h-rain-1h').textContent = `${data.rain_accumulated_1h_mm || '0'} mm`;
-        document.getElementById('h-rain-24h').textContent = `${data.rain_accumulated_24h_mm || '0'} mm`;
+        document.getElementById('h-station').textContent = data.station_name;
+        document.getElementById('h-level').textContent = `${data.current_level_m} m`;
+        document.getElementById('h-warn').textContent = `${data.warning_level_m} m`;
+        document.getElementById('h-rain-1h').textContent = `${data.rain_accumulated_1h_mm} mm`;
+        document.getElementById('h-rain-24h').textContent = `${data.rain_accumulated_24h_mm} mm`;
         
         setStatusBadge('h-status', data.status);
         setStatusBadge('h-turbidity', data.turbidity_status);
@@ -187,78 +172,76 @@ window.toggleSpotDetails = function(element) {
     const icon = element.querySelector('.toggle-icon');
     const spotName = element.querySelector('.spot-name');
     
-    if (!details) return;
-    
     if (details.style.display === 'none') {
         details.style.display = 'block';
-        if (icon) icon.style.transform = 'rotate(180deg)';
-        if (spotName) spotName.style.color = '#38bdf8';
+        icon.style.transform = 'rotate(180deg)';
+        spotName.style.color = '#38bdf8';
     } else {
         details.style.display = 'none';
-        if (icon) icon.style.transform = 'rotate(0deg)';
-        if (spotName) spotName.style.color = '';
+        icon.style.transform = 'rotate(0deg)';
+        spotName.style.color = '';
     }
 }
 
 // 獲取核心資料庫 (流域與釣點) 並渲染
 async function fetchAndRenderBasin() {
-    console.log(`[Init] Fetching data for: ${currentBasinId}`);
     try {
         const res = await fetch(`${API_BASE}/fishing_spots/${currentBasinId}`);
-        if (!res.ok) throw new Error('Basin API Failed');
         const data = await res.json();
         
         const listContainer = document.getElementById('river-list');
-        if (!listContainer) return;
         
         if (!data || !data.river_sections || data.river_sections.length === 0) {
-            console.warn('No sections found');
+            console.error('No river sections found for basin:', currentBasinId);
             listContainer.innerHTML = `
-                <div class="glass-card" style="padding: 30px; text-align: center;">
-                    <h3 style="color: #fca5a5;">⚠️ 資料庫讀取中</h3>
-                    <p style="color: #94a3b8;">請稍候，或確認後端是否正在進行 Seeding。</p>
+                <div class="glass-card" style="padding: 30px; text-align: center; border: 1px dashed rgba(239, 68, 68, 0.4); background: rgba(239, 68, 68, 0.05);">
+                    <div style="font-size: 2rem; margin-bottom: 10px;">⚠️</div>
+                    <h3 style="color: #fca5a5; margin-bottom: 10px;">資料庫尚未就緒</h3>
+                    <p style="color: #94a3b8; font-size: 0.9rem;">偵測到流域資料庫為空，可能正在進行雲端熱啟動或資料初始化中。</p>
+                    <button onclick="window.fetchAndRenderBasin()" style="margin-top: 15px; padding: 8px 16px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 6px; color: #fff; cursor: pointer;">🔄 點擊手動重新整理</button>
                 </div>
             `;
             return;
         }
         
-        // 隔離執行各組件，互不干擾
-        try { fetchTraffic(); } catch(err) { console.error("Traffic fail", err); }
-        try { fetchWeather(data.weather_station_id); } catch(err) { console.error("Weather fail", err); }
+        // Fetch Live APIs
+        fetchTraffic();
+        fetchWeather(data.weather_station_id);
         
-        const main_station = (data.river_sections || []).find(s => (s.type || s.section_type || '').includes('主流'))?.water_level_station_id || 'UNKNOWN';
-        try { fetchWater(main_station); } catch(err) { console.error("Water fail", err); }
-        try { fetchReports(); } catch(err) { console.error("Reports fail", err); }
+        // 取主流來當水情指標 (增加空值保護防止崩潰)
+        const main_station = (data.river_sections || []).find(s => (s.type || '').includes('主流'))?.water_level_station_id || 'UNKNOWN';
+        fetchWater(main_station);
         
         // 更新表單釣點選單
         const spotSelect = document.getElementById('report-spot');
-        if (spotSelect) {
-            spotSelect.innerHTML = '<option value="">請選擇本次作釣點...</option>';
-            spotSelect.innerHTML += '<option value="自家菜園 (不便透露)">🤫 自家菜園 (不便透露)</option>';
-            data.river_sections.forEach(section => {
-                if (section.fishing_spots) {
-                    section.fishing_spots.forEach(spot => {
-                        spotSelect.innerHTML += `<option value="${spot.spot_name}">${spot.spot_name}</option>`;
-                    });
-                }
+        spotSelect.innerHTML = '<option value="">請選擇本次作釣點...</option>';
+        spotSelect.innerHTML += '<option value="自家菜園 (不便透露)">🤫 自家菜園 (不便透露)</option>';
+        data.river_sections.forEach(section => {
+            section.fishing_spots.forEach(spot => {
+                spotSelect.innerHTML += `<option value="${spot.spot_name}">${spot.spot_name}</option>`;
             });
-        }
+        });
+        
+        // 載入該流域戰報
+        fetchReports();
 
         // Render River Sections
+        const listContainer = document.getElementById('river-list');
         listContainer.innerHTML = '';
+
         data.river_sections.forEach(section => {
             const card = document.createElement('div');
             card.className = 'glass-card river-card';
 
             let spotsHtml = '';
-            if (!section.fishing_spots || section.fishing_spots.length === 0) {
+            if (section.fishing_spots.length === 0) {
                 spotsHtml = '<div class="spot-item"><span class="spot-name">未解鎖 / 尚未勘查</span></div>';
             } else {
                 spotsHtml = section.fishing_spots.map(spot => {
                     let decoyText = spot.decoy_vendor ? `販售魚媒：${spot.decoy_vendor}` : `有販售魚媒`;
                     const decoyBadge = spot.has_decoy ? `<span class="badge decoy-badge" style="pointer-events: none;">${decoyText}</span>` : '';
                     return `
-                    <li class="spot-item" style="cursor: pointer; transition: background 0.3s;" onclick="window.toggleSpotDetails(this)">
+                    <li class="spot-item" style="cursor: pointer; transition: background 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.08)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'" onclick="window.toggleSpotDetails(this)">
                         <div style="display:flex; justify-content:space-between; align-items:center;">
                             <div style="display:flex; align-items:center; gap: 8px;">
                                 <span class="spot-name" style="margin-bottom:0; transition: color 0.3s;">📍 ${spot.spot_name}</span>
@@ -266,33 +249,36 @@ async function fetchAndRenderBasin() {
                             </div>
                             ${decoyBadge}
                         </div>
-                        <div class="spot-details" style="display: none; margin-top: 12px; background: rgba(0,0,0,0.9); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; padding: 15px;">
-                            <div style="margin-bottom: 12px; font-size: 0.95rem;">
-                                <span style="color: #38bdf8; font-weight: 700; font-size: 0.75rem; display: block; margin-bottom: 4px;">📝 FEATURE / 特色</span>
+                        <div class="spot-details" style="display: none; margin-top: 12px; background: rgba(0,0,0,0.9); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; padding: 15px; box-shadow: inset 0 2px 10px rgba(0,0,0,0.5);">
+                            
+                            <div style="margin-bottom: 12px; line-height: 1.6; font-size: 0.95rem; letter-spacing: 0.5px; font-weight: 300;">
+                                <span style="color: #38bdf8; font-weight: 700; font-size: 0.75rem; letter-spacing: 1.5px; display: block; margin-bottom: 4px; border-bottom: 1px solid rgba(56,189,248,0.3); padding-bottom: 2px; width: fit-content;">📝 FEATURE / 特色</span>
                                 <span style="color: #f8fafc;">${spot.spot_desc || '尚無描述'}</span>
                             </div>
-                            <div style="margin-bottom: 12px; font-size: 0.95rem;">
-                                <span style="color: #4ade80; font-weight: 700; font-size: 0.75rem; display: block; margin-bottom: 4px;">🥾 ACCESS / 徒步下切</span>
-                                <span style="color: #f8fafc;">${spot.access_info || '未知'}</span>
+                            
+                            <div style="margin-bottom: 12px; line-height: 1.6; font-size: 0.95rem; letter-spacing: 0.5px; font-weight: 300;">
+                                <span style="color: #4ade80; font-weight: 700; font-size: 0.75rem; letter-spacing: 1.5px; display: block; margin-bottom: 4px; border-bottom: 1px solid rgba(74,222,128,0.3); padding-bottom: 2px; width: fit-content;">🥾 ACCESS / 徒步下切</span>
+                                <span style="color: #f8fafc;">${spot.access_info}</span>
                             </div>
-                            <div style="font-size: 0.95rem;">
-                                <span style="color: #f8fafc;">${spot.business_status || '--'}</span>
+                            
+                            <div style="line-height: 1.6; font-size: 0.95rem; letter-spacing: 0.5px; font-weight: 300;">
+                                <span style="color: #f8fafc;">${spot.business_status}</span>
                             </div>
+
                             ${spot.map_url ? `
                             <div style="margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 12px;">
-                                <a href="${spot.map_url}" target="_blank" style="display: block; width: 100%; padding: 10px; background: #38bdf8; color: #000; text-decoration: none; text-align: center; border-radius: 8px; font-weight: 900; font-size: 0.9rem;">🏎️ GOOGLE MAP 直達導航</a>
+                                <a href="${spot.map_url}" target="_blank" style="display: block; width: 100%; padding: 10px; background: #38bdf8; color: #000; text-decoration: none; text-align: center; border-radius: 8px; font-weight: 900; font-size: 0.9rem; letter-spacing: 1px; box-shadow: 0 4px 15px rgba(56, 189, 248, 0.3); transition: all 0.2s;">🏎️ GOOGLE MAP 直達導航</a>
                             </div>
                             ` : ''}
                         </div>
                     </li>
-                `.trim()}).join('');
+                `}).join('');
             }
 
-            const typeStr = section.type || section.section_type || '';
-            const isMainstream = typeStr.includes('主流');
+            const isMainstream = (section.type || '').includes('主流');
             card.innerHTML = `
-                <h3>${section.name || '未知河段'} <span class="river-type">${isMainstream ? '主流' : '支流'}</span></h3>
-                <p class="river-desc">${section.characteristics || ''}</p>
+                <h3>${section.name} <span class="river-type">${isMainstream ? '主流' : '支流'}</span></h3>
+                <p class="river-desc">${section.characteristics}</p>
                 <ul class="spots-list">
                     ${spotsHtml}
                 </ul>
@@ -301,9 +287,11 @@ async function fetchAndRenderBasin() {
         });
 
     } catch (e) {
-        console.error('Basin Fetch Critical Error:', e);
-        const el = document.getElementById('river-list');
-        if (el) el.innerHTML = '<div class="glass-card" style="padding:20px; color:#fca5a5;">⚠️ 無法載入流域資料，請檢查後端連線或重新整理頁面。</div>';
+        console.error('Basin Fetch Error:', e);
+        const listContainer = document.getElementById('river-list');
+        if (listContainer) {
+            listContainer.innerHTML = '<div class="glass-card" style="padding:20px; color:#fca5a5;">⚠️ 無法載入流域資料，請檢查後端連線。</div>';
+        }
     }
 }
 
@@ -313,39 +301,37 @@ async function fetchReports() {
         const res = await fetch(`${API_BASE}/reports/${currentBasinId}`);
         const reports = await res.json();
         const container = document.getElementById('reports-container');
-        if (!container) return;
         
-        if (!reports || reports.length === 0) {
+        if (reports.length === 0) {
             container.innerHTML = '<div style="color:#64748b; padding: 20px;">尚無紀錄或戰報正在等待審核中...</div>';
             return;
         }
         
         let html = '';
         reports.forEach(r => {
-            const telemetry = r.telemetry || {};
             html += `
                 <div class="report-card">
-                    <img src="${(r.photo_urls && r.photo_urls[0]) || 'https://via.placeholder.com/300'}" alt="戰報照片">
+                    <img src="${r.photo_urls[0]}" alt="戰報照片">
                     <div class="report-card-body">
                         <div class="report-meta">
-                            <span>📍 ${r.spot_name || '未知'}</span>
-                            <span>👤 ${r.author || '釣客'}</span>
+                            <span>📍 ${r.spot_name}</span>
+                            <span>👤 ${r.author}</span>
                         </div>
                         <p style="font-size: 0.9rem; color: #e2e8f0; margin-bottom: 10px; line-height: 1.4;">
-                            ${r.content || ''}
+                            ${r.content}
                         </p>
                         <div style="margin-bottom: 10px;">
-                            <span class="badge" style="background: rgba(34,197,94,0.2); color:#4ade80;">🐟 ${r.catch?.count || '--'}</span>
-                            <span class="badge" style="background: rgba(234,179,8,0.2); color:#fde047;">📏 最大 ${r.catch?.max_size || '--'}cm</span>
+                            <span class="badge" style="background: rgba(34,197,94,0.2); color:#4ade80;">🐟 ${r.catch.count}</span>
+                            <span class="badge" style="background: rgba(234,179,8,0.2); color:#fde047;">📏 最大 ${r.catch.max_size}cm</span>
                         </div>
                         <div style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px;">
-                            <span class="tackle-tag">🎣 ${r.tackle?.rod || '--'}</span>
-                            <span class="tackle-tag">🧵 ${r.tackle?.line || '--'}</span>
-                            <span class="tackle-tag">🪝 ${r.tackle?.hook || '--'}</span>
+                            <span class="tackle-tag">🎣 ${r.tackle.rod}</span>
+                            <span class="tackle-tag">🧵 ${r.tackle.line}</span>
+                            <span class="tackle-tag">🪝 ${r.tackle.hook}</span>
                         </div>
                         <div style="margin-top: 10px; font-size: 0.75rem; color: #64748b; display:flex; justify-content:space-between; align-items: center; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 8px;">
-                            <span>💦 ${telemetry.water_level || '--'} / ${telemetry.turbidity || '--'}</span>
-                            <span style="color: #38bdf8; font-weight: bold;">🌤️ ${telemetry.weather_desc || ''} ${telemetry.temp || '--'}℃</span>
+                            <span>💦 ${r.telemetry.water_level} / ${r.telemetry.turbidity}</span>
+                            <span style="color: #38bdf8; font-weight: bold;">🌤️ ${r.telemetry.weather_desc} ${r.telemetry.temp}℃</span>
                         </div>
                     </div>
                 </div>
@@ -390,14 +376,14 @@ window.submitReport = async function(e) {
 
     // Add the photo file
     const photoInput = document.getElementById('report-photo');
-    if (photoInput && photoInput.files.length > 0) {
+    if (photoInput.files.length > 0) {
         formData.append('photo', photoInput.files[0]);
     }
 
     try {
         const res = await fetch(`${API_BASE}/reports`, {
             method: 'POST',
-            body: formData
+            body: formData // Fetch allows passing FormData directly
         });
         const result = await res.json();
         alert(result.message);
@@ -411,8 +397,7 @@ window.submitReport = async function(e) {
 
 // --- 圖表與趨勢邏輯 ---
 window.showTrend = async function() {
-    const modal = document.getElementById('trend-modal');
-    if (modal) modal.style.display = 'flex';
+    document.getElementById('trend-modal').style.display = 'flex';
     try {
         const res = await fetch(`${API_BASE}/telemetry/history/${currentBasinId}`);
         const data = await res.json();
@@ -423,8 +408,7 @@ window.showTrend = async function() {
 }
 
 window.closeTrendModal = function() {
-    const modal = document.getElementById('trend-modal');
-    if (modal) modal.style.display = 'none';
+    document.getElementById('trend-modal').style.display = 'none';
     if (trendChart) {
         trendChart.destroy();
         trendChart = null;
@@ -432,11 +416,7 @@ window.closeTrendModal = function() {
 }
 
 function renderTrendChart(history) {
-    const canvas = document.getElementById('trendChart');
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    
-    if (!history.levels || !history.rains) return;
+    const ctx = document.getElementById('trendChart').getContext('2d');
     
     const labels = history.levels.map(l => l.time);
     const levelData = history.levels.map(l => l.value);
@@ -498,7 +478,6 @@ function renderTrendChart(history) {
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
-    console.log("🚀 Ayu Radar System Initializing...");
     fetchAndRenderBasin();
-    setInterval(fetchAndRenderBasin, 120000); // 2分鐘輪詢一次
+    setInterval(fetchAndRenderBasin, 60000);
 });

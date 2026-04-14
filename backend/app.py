@@ -643,6 +643,7 @@ def admin_manage_spot(spot_id):
 def seed_data_from_json():
     """從 data.json 注入初始流域與釣點資料（若資料庫為空）"""
     try:
+        if Basin.query.count() == 0:
             # Try multiple path possibilities for cloud environment
             json_paths = [
                 os.path.join(basedir, 'data.json'),

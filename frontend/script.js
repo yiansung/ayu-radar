@@ -230,9 +230,10 @@ async function fetchAndRenderBasin() {
         try { fetchWater(main_station); } catch(err) { console.error("Water fail", err); }
         try { fetchReports(); } catch(err) { console.error("Reports fail", err); }
         
-        // 更新表單釣點選單
+        // 更新表單釣點選單 (並保存使用者已選項目防止被計時器覆蓋)
         const spotSelect = document.getElementById('report-spot');
         if (spotSelect) {
+            const currentSelected = spotSelect.value;
             spotSelect.innerHTML = '<option value="">請選擇本次作釣點...</option>';
             spotSelect.innerHTML += '<option value="自家菜園 (不便透露)">🤫 自家菜園 (不便透露)</option>';
             data.river_sections.forEach(section => {
@@ -242,6 +243,9 @@ async function fetchAndRenderBasin() {
                     });
                 }
             });
+            if (currentSelected) {
+                spotSelect.value = currentSelected;
+            }
         }
 
         // Render River Sections
@@ -323,9 +327,20 @@ async function fetchReports() {
         let html = '';
         reports.forEach(r => {
             const telemetry = r.telemetry || {};
+            let photosHtml = '';
+            if (r.photo_urls && r.photo_urls.length > 0) {
+                photosHtml = '<div class="report-photos-grid">';
+                r.photo_urls.forEach(url => {
+                    photosHtml += `<img src="${url}" alt="戰報照片" onclick="window.openLightbox('${url}')">`;
+                });
+                photosHtml += '</div>';
+            } else {
+                photosHtml = `<img src="https://via.placeholder.com/300" alt="戰報照片" class="single-photo">`;
+            }
+
             html += `
                 <div class="report-card">
-                    <img src="${(r.photo_urls && r.photo_urls[0]) || 'https://via.placeholder.com/300'}" alt="戰報照片">
+                    ${photosHtml}
                     <div class="report-card-body">
                         <div class="report-meta">
                             <span>📍 ${r.spot_name || '未知'}</span>
@@ -372,7 +387,11 @@ window.submitReport = async function(e) {
     const formData = new FormData();
     formData.append('basin_id', currentBasinId);
     formData.append('spot_name', document.getElementById('report-spot').value);
-    formData.append('author', "匿名釣客");
+    
+    // 讀取分享者名稱
+    const authorEl = document.getElementById('report-author');
+    formData.append('author', authorEl ? authorEl.value : "匿名釣客");
+    
     formData.append('content', document.getElementById('report-content').value);
     formData.append('catch_count', document.getElementById('report-count').value || "-");
     formData.append('catch_max_size', document.getElementById('report-size').value || "-");
@@ -388,10 +407,13 @@ window.submitReport = async function(e) {
         temp: temp
     }));
 
-    // Add the photo file
+    // Add up to 5 photo files
     const photoInput = document.getElementById('report-photo');
     if (photoInput && photoInput.files.length > 0) {
-        formData.append('photo', photoInput.files[0]);
+        let maxFiles = Math.min(photoInput.files.length, 5);
+        for (let i = 0; i < maxFiles; i++) {
+            formData.append('photos', photoInput.files[i]);
+        }
     }
 
     try {
@@ -441,6 +463,27 @@ function renderTrendChart(history) {
     const labels = history.levels.map(l => l.time);
     const levelData = history.levels.map(l => l.value);
     const rainData = history.rains.map(l => l.value);
+
+    // Lightbox Logic
+    window.openLightbox = function(url) {
+        const modal = document.getElementById('lightbox-modal');
+        const img = document.getElementById('lightbox-img');
+        if (modal && img) {
+            img.src = url;
+            modal.style.display = 'flex';
+        }
+    }
+    
+    window.closeLightbox = function(e) {
+        // Prevent closing if clicked directly on image
+        if (e && e.target.id === 'lightbox-img') return;
+        const modal = document.getElementById('lightbox-modal');
+        if (modal) modal.style.display = 'none';
+    }
+
+    if (trendChart) {
+        trendChart.destroy();
+    }
 
     trendChart = new Chart(ctx, {
         type: 'line',

@@ -131,6 +131,10 @@
             <h2 style="margin-bottom: 20px;">📸 分享釣遊報告</h2>
             <form id="report-form" onsubmit="window.submitReport(event)">
                 <div class="form-group">
+                    <label>👤 分享者 (必填)</label>
+                    <input type="text" id="report-author" placeholder="你的大名或暱稱" required style="width:100%; padding: 10px; background: #000; border: 1px solid rgba(255,255,255,0.2); color:#fff; border-radius: 8px;">
+                </div>
+                <div class="form-group">
                     <label>📍 發生釣點 (必填)</label>
                     <select id="report-spot" required style="width:100%; padding: 10px; background: #000; border: 1px solid rgba(255,255,255,0.2); color:#fff; border-radius: 8px;">
                         <option value="">載入釣點清單中...</option>
@@ -153,9 +157,9 @@
                     <input type="text" id="report-hook" placeholder="釣鉤 (例: 7.5號 四本錨)" required style="width:95%; margin-top: 8px; background: #000; color: #fff; padding: 10px; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px;">
                 </div>
                 <div class="form-group">
-                    <label>📸 戰報照片 (必填)</label>
-                    <input type="file" id="report-photo" accept="image/*" required style="width: 100%; padding: 10px; background: #000; border: 1px solid rgba(255,255,255,0.2); color: #fff; border-radius: 8px; margin-bottom: 5px;">
-                    <small style="color: #94a3b8; font-size: 0.8rem;">(註：Demo 伺服器不會永久儲存真實大檔，送出後暫以系統高清圖替代顯示)</small>
+                    <label>📸 戰報照片 (必填，最多 5 張)</label>
+                    <input type="file" id="report-photo" accept="image/*" multiple required style="width: 100%; padding: 10px; background: #000; border: 1px solid rgba(255,255,255,0.2); color: #fff; border-radius: 8px; margin-bottom: 5px;">
+                    <small style="color: #94a3b8; font-size: 0.8rem;">(一次可選擇多張照片，上限 5 張)</small>
                 </div>
                 <div class="form-group">
                     <label>📝 釣場實況心得 (必填)</label>
@@ -183,6 +187,11 @@
                 <div style="display:flex; align-items: center; gap: 5px;"><span style="width:12px; height:12px; background:#fbbf24; border-radius:2px;"></span> 累積雨量 (mm)</div>
             </div>
         </div>
+    </div>
+    <!-- Lightbox Modal -->
+    <div id="lightbox-modal" class="modal-overlay" style="z-index: 3000;" onclick="window.closeLightbox(event)">
+        <span class="close-btn" style="font-size: 2rem; top: 20px; right: 30px;" onclick="window.closeLightbox(event)">&times;</span>
+        <img id="lightbox-img" src="" style="max-width: 90%; max-height: 85vh; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); object-fit: contain;">
     </div>
 
 

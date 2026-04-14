@@ -595,15 +595,17 @@ def submit_report():
         telemetry_raw = request.form.get('telemetry', '{}')
         telemetry = json.loads(telemetry_raw)
 
-        # Handle file upload
+        # Handle file upload(s)
         photo_urls = []
-        if 'photo' in request.files:
-            file = request.files['photo']
-            if file and allowed_file(file.filename):
-                filename = f"{int(time.time())}_{file.filename}"
-                file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-                file.save(file_path)
-                photo_urls.append(f"/uploads/{filename}")
+        if 'photos' in request.files:
+            files = request.files.getlist('photos')
+            for file in files[:5]: # Max 5 photos enforcement
+                if file and allowed_file(file.filename):
+                    # Add random element to deduplicate fast multi-uploads
+                    filename = f"{int(time.time())}_{random.randint(1000, 9999)}_{file.filename}"
+                    file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                    file.save(file_path)
+                    photo_urls.append(f"/uploads/{filename}")
         
         if not photo_urls:
             # Fallback for demo

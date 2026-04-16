@@ -860,10 +860,11 @@ def init_mock_telemetry():
     if TelemetryLog.query.count() == 0:
         print("Initializing mock telemetry history...")
         for b_id in ['pinglin', 'wulai']:
-            base_level = 106.0
+            # 依據地理位置給予不同的基準水位 (坪林 ~105m, 烏來 ~120m)
+            base_level = 105.5 if b_id == 'pinglin' else 120.2
             for i in range(24):
                 t_str = f"{(time.localtime().tm_hour - (23-i)) % 24:02d}:00"
-                db.session.add(TelemetryLog(basin_id=b_id, data_type='level', value=base_level + random.uniform(-0.5, 0.5), timestamp=t_str))
+                db.session.add(TelemetryLog(basin_id=b_id, data_type='level', value=base_level + random.uniform(-0.3, 0.3), timestamp=t_str))
                 db.session.add(TelemetryLog(basin_id=b_id, data_type='rain', value=random.uniform(0, 5), timestamp=t_str))
         db.session.commit()
 

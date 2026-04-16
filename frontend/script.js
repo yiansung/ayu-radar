@@ -181,7 +181,7 @@ async function fetchWater(stationId) {
         document.getElementById('h-rain-72h').textContent = `${data.rain_72h !== undefined ? data.rain_72h : '-'} mm`;
         
         // 取得正確的 CWA ID 產生圖表連結
-        let cwaId = stationId === 'pinglin' ? 'L1A80' : 'C2A560';
+        let cwaId = stationId === 'pinglin' ? 'C0A53' : 'C2A56';
         document.getElementById('h-trend-link').href = `https://www.cwa.gov.tw/V8/C/P/Rainfall/Rainfall_PlotImg.html?ID=${cwaId}`;
         
         setStatusBadge('h-turbidity', data.turbidity_status);

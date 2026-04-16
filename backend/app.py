@@ -248,7 +248,7 @@ INTELLIGENCE_CENTER = {
         }
     },
     "water": {
-        "pinglin": {"station_id": "pinglin", "station_name": "翡翠水庫碧湖", "rain_24h": 0.0, "rain_72h": 0.0, "turbidity_status": "溪水清澈 🟢", "last_update": "Syncing"},
+        "pinglin": {"station_id": "pinglin", "station_name": "坪林", "rain_24h": 0.0, "rain_72h": 0.0, "turbidity_status": "溪水清澈 🟢", "last_update": "Syncing"},
         "wulai": {"station_id": "wulai", "station_name": "福山", "rain_24h": 0.0, "rain_72h": 0.0, "turbidity_status": "溪水清澈 🟢", "last_update": "Syncing"}
     },
     "last_sync": "Initializing"
@@ -334,7 +334,7 @@ def fetch_official_traffic(basin_id):
                     { "route_name": "國道五號 (南港👉坪林)", "avg_speed_kmh": avg_speed, "status": status }
                 ],
                 "cameras": [
-                    { "cam_name": "📹 CCTV 即時路側影像：國道五號 (坪林交控)", "url": "https://www.1968services.tw/freeway/5/s" }
+                    { "cam_name": "📹 CCTV台北👉宜蘭", "url": "https://www.1968services.tw/freeway/5/s" }
                 ]
             }
         else:
@@ -356,7 +356,7 @@ def fetch_official_traffic(basin_id):
 def fetch_official_water(station_id):
     """內部函數：實際對接 CWA 累積雨量 API (取代舊版水利署水位)"""
     try:
-        cwa_rain_id = "L1A80" if station_id == "pinglin" else "C2A560"
+        cwa_rain_id = "C0A530" if station_id == "pinglin" else "C2A560"
         
         rain_24h = 0.0
         rain_72h = 0.0
@@ -378,7 +378,7 @@ def fetch_official_water(station_id):
         
         return {
             "station_id": station_id,
-            "station_name": "翡翠水庫碧湖" if station_id == "pinglin" else "福山",
+            "station_name": "坪林" if station_id == "pinglin" else "福山",
             "rain_24h": rain_24h,
             "rain_72h": rain_72h,
             "turbidity_status": "溪水清澈 🟢" if rain_72h < 15 else "略有混濁 🟡",

@@ -265,17 +265,10 @@ def fetch_official_weather(cwa_sid):
                 we = {item['ElementName']: item['ElementValue'] for item in we}
             
             weather_desc = we.get('Weather', "晴時多雲")
-            rain_now_str = we.get('Now', {}).get('Precipitation', "0.0") if isinstance(we.get('Now'), dict) else "0.0"
-            try:
-                rain_now = float(rain_now_str) if rain_now_str != "-99" else 0.0
-            except:
-                rain_now = 0.0
             
-            # 智慧天氣描述：若 O-A0003-001 測站雨量大於 0，強制更正為降雨
+            # 若自動測站缺乏天氣描述，才補上預設值，不再用本日累積雨量誤判
             if weather_desc == "-99" or not weather_desc:
-                weather_desc = "降雨中 🌧️" if rain_now > 0 else "晴朗多雲"
-            elif rain_now > 0 and "雨" not in weather_desc:
-                weather_desc = "降雨中 🌧️"
+                weather_desc = "晴朗多雲"
             
             temp_str = we.get('AirTemperature', "25.0")
             temp = float(temp_str) if temp_str != "-99" and temp_str else 25.0
@@ -287,8 +280,11 @@ def fetch_official_weather(cwa_sid):
             # 簡單體感溫度計算
             feels_like = temp + (0.5 * (temp - 15)) if temp > 20 else temp
             
+            # 優化測站名稱顯示
+            station_name = "坪林" if cwa_sid == "CAAD90" else ("烏來" if cwa_sid == "C2A560" else obs['StationName'])
+            
             return {
-                "station_name": obs['StationName'],
+                "station_name": station_name,
                 "current_temp": temp,
                 "feels_like_temp": round(feels_like, 1),
                 "humidity": f"{int(humidity * 100)}%" if humidity < 1 else f"{humidity}%",

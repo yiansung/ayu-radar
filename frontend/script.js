@@ -169,27 +169,24 @@ async function fetchWater(stationId) {
         const data = await res.json();
 
         if (data.station_id === "UNKNOWN") {
-            document.getElementById('h-station').textContent = "無官方水文站";
-            document.getElementById('h-level').textContent = "-";
-            document.getElementById('h-warn').textContent = "-";
-            document.getElementById('h-rain-1h').textContent = "- mm";
+            document.getElementById('h-station').textContent = "無官方觀測站";
             document.getElementById('h-rain-24h').textContent = "- mm";
-            setStatusBadge('h-status', data.status);
+            document.getElementById('h-rain-72h').textContent = "- mm";
             setStatusBadge('h-turbidity', data.turbidity_status);
             return;
         }
 
         document.getElementById('h-station').textContent = data.station_name || '未知';
-        document.getElementById('h-level').textContent = `${data.current_level_m || '-'} m`;
-        document.getElementById('h-warn').textContent = `${data.warning_level_m || '-'} m`;
-        document.getElementById('h-rain-1h').textContent = `${data.rain_accumulated_1h_mm || '0'} mm`;
-        document.getElementById('h-rain-24h').textContent = `${data.rain_accumulated_24h_mm || '0'} mm`;
+        document.getElementById('h-rain-24h').textContent = `${data.rain_24h !== undefined ? data.rain_24h : '-'} mm`;
+        document.getElementById('h-rain-72h').textContent = `${data.rain_72h !== undefined ? data.rain_72h : '-'} mm`;
         
-        setStatusBadge('h-status', data.status);
+        // 取得正確的 CWA ID 產生圖表連結
+        let cwaId = stationId === 'pinglin' ? 'L1A80' : 'C2A560';
+        document.getElementById('h-trend-link').href = `https://www.cwa.gov.tw/V8/C/P/Rainfall/Rainfall_PlotImg.html?ID=${cwaId}`;
+        
         setStatusBadge('h-turbidity', data.turbidity_status);
     } catch (e) {
-        console.error('Water API Error:', e);
-        setStatusBadge('h-status', '連線失敗 🔴');
+        console.error('Rainfall API Error:', e);
         setStatusBadge('h-turbidity', '連線失敗 🔴');
     }
 }

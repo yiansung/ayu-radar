@@ -247,8 +247,8 @@ INTELLIGENCE_CENTER = {
         }
     },
     "water": {
-        "pinglin": {"station_id": "pinglin", "station_name": "坪林橋", "current_level_m": 105.8, "warning_level_m": 107.5, "rain_accumulated_1h_mm": 0.0, "rain_accumulated_24h_mm": 2.5, "status": "安全水位 🟢", "turbidity_status": "溪水清澈 🟢", "last_update": "Syncing"},
-        "wulai": {"station_id": "wulai", "station_name": "福山橋", "current_level_m": 120.2, "warning_level_m": 122.0, "rain_accumulated_1h_mm": 0.0, "rain_accumulated_24h_mm": 5.0, "status": "安全水位 🟢", "turbidity_status": "溪水清澈 🟢", "last_update": "Syncing"}
+        "pinglin": {"station_id": "pinglin", "station_name": "翡翠水庫碧湖", "rain_24h": 0.0, "rain_72h": 0.0, "turbidity_status": "溪水清澈 🟢", "last_update": "Syncing"},
+        "wulai": {"station_id": "wulai", "station_name": "福山", "rain_24h": 0.0, "rain_72h": 0.0, "turbidity_status": "溪水清澈 🟢", "last_update": "Syncing"}
     },
     "last_sync": "Initializing"
 }
@@ -333,7 +333,7 @@ def fetch_official_traffic(basin_id):
                     { "route_name": "國道五號 (南港👉坪林)", "avg_speed_kmh": avg_speed, "status": status }
                 ],
                 "cameras": [
-                    { "cam_name": "🎥 坪林 即時監控", "url": "https://www.1968services.tw/freeway/5/s" }
+                    { "cam_name": "📹 CCTV 即時路側影像：國道五號 (坪林交控)", "url": "https://www.1968services.tw/freeway/5/s" }
                 ]
             }
         else:
@@ -344,7 +344,7 @@ def fetch_official_traffic(basin_id):
                     { "route_name": "國道三號 (安坑👉新店)", "avg_speed_kmh": avg_speed, "status": status }
                 ],
                 "cameras": [
-                    { "cam_name": "🎥 烏來 即時監控", "url": "https://www.1968services.tw/cam/n3-s-25k+704" }
+                    { "cam_name": "📹 CCTV 即時路側影像：台9甲線 (烏來端)", "url": "https://www.1968services.tw/cam/n3-s-25k+704" }
                 ]
             }
     except Exception as e:
@@ -352,51 +352,36 @@ def fetch_official_traffic(basin_id):
     return None
 
 def fetch_official_water(station_id):
-    """內部函數：實際對接水利署水位 API 並結合 CWA 雨勢 API"""
+    """內部函數：實際對接 CWA 累積雨量 API (取代舊版水利署水位)"""
     try:
-        wra_id = "1140H048" if station_id == "pinglin" else "1140H096"
-        cwa_rain_id = "C0A530" if station_id == "pinglin" else "C2A560"
+        cwa_rain_id = "L1A80" if station_id == "pinglin" else "C2A560"
         
-        # 1. 取真實水位
-        url_water = f"https://fhy.wra.gov.tw/fhyv2/api/v1/Water/RealTime/Station"
-        resp_w = requests.get(url_water, timeout=10, verify=False)
-        data_w = resp_w.json()
-        
-        level = None
-        for item in data_w:
-            if item.get('StationNo') == wra_id:
-                level = item.get('WaterLevel')
-                break
-                
-        # 2. 取真實累積雨量
-        rain_1h = 0.0
         rain_24h = 0.0
+        rain_72h = 0.0
         url_rain = f"https://opendata.cwa.gov.tw/api/v1/rest/datastore/O-A0002-001?Authorization={CWA_TOKEN}&StationId={cwa_rain_id}"
+        
         try:
             resp_r = requests.get(url_rain, timeout=5, verify=False)
             data_r = resp_r.json()
             if data_r.get('success') == 'true' and data_r['records']['Station']:
                 re = data_r['records']['Station'][0].get('RainfallElement', {})
-                r_1h_str = re.get('Past1hr', {}).get('Precipitation', "0.0")
                 r_24h_str = re.get('Past24hr', {}).get('Precipitation', "0.0")
-                rain_1h = float(r_1h_str) if r_1h_str != "-99" else 0.0
+                r_72h_str = re.get('Past3days', {}).get('Precipitation', "0.0")
+                
                 rain_24h = float(r_24h_str) if r_24h_str != "-99" else 0.0
+                rain_72h = float(r_72h_str) if r_72h_str != "-99" else 0.0
         except Exception as re:
             print(f"Rain Sync Error for {cwa_rain_id}: {re}")
+            return None
         
-        if level is not None:
-            warn_level = 107.5 if station_id == "pinglin" else 122.0
-            return {
-                "station_id": station_id,
-                "station_name": "坪林橋" if station_id == "pinglin" else "福山橋",
-                "current_level_m": round(float(level), 2),
-                "warning_level_m": warn_level,
-                "rain_accumulated_1h_mm": rain_1h,
-                "rain_accumulated_24h_mm": rain_24h,
-                "status": "安全水位 🟢" if float(level) < warn_level else "警戒水位 🔴",
-                "turbidity_status": "溪水清澈 🟢" if rain_24h < 10 else "略有混濁 🟡",
-                "last_update": time.strftime("%H:%M")
-            }
+        return {
+            "station_id": station_id,
+            "station_name": "翡翠水庫碧湖" if station_id == "pinglin" else "福山",
+            "rain_24h": rain_24h,
+            "rain_72h": rain_72h,
+            "turbidity_status": "溪水清澈 🟢" if rain_72h < 15 else "略有混濁 🟡",
+            "last_update": time.strftime("%H:%M")
+        }
     except Exception as e:
         print(f"Background Water Sync Error ({station_id}): {e}")
     return None
@@ -423,12 +408,12 @@ def background_intelligence_poller():
                 if result:
                     INTELLIGENCE_CENTER["traffic"][bid] = result
             
-            # 3. 更新水情 (對接實際 WRA API)
+            # 3. 更新累積雨量 (取代水位)
             for sid in ["pinglin", "wulai"]:
                 result = fetch_official_water(sid)
                 if result:
                     INTELLIGENCE_CENTER["water"][sid] = result
-                    print(f"✅ [ Water ] {sid} Synced: {result['current_level_m']}m")
+                    print(f"✅ [ Rain ] {sid} Synced: {result['rain_24h']}mm")
                 else:
                     # Fallback to simulation
                     INTELLIGENCE_CENTER["water"][sid] = {

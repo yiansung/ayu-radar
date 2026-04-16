@@ -158,6 +158,17 @@ def debug_status():
         })
     except Exception as e:
         return jsonify({"error": str(e)})
+        
+@app.route('/api/debug/ping_cwa')
+def ping_cwa():
+    """診斷專用：強制從 Render 主機發出請求測試是否被台灣政府防火牆阻擋"""
+    try:
+        import requests
+        url = f"https://opendata.cwa.gov.tw/api/v1/rest/datastore/O-A0003-001?Authorization={CWA_TOKEN}&limit=1"
+        resp = requests.get(url, timeout=5, verify=False)
+        return jsonify({"status": "success", "status_code": resp.status_code, "data_snippet": resp.text[:200]})
+    except Exception as e:
+        return jsonify({"status": "error", "message": "請求失敗，可能是 Render (美國主機) 被台灣政府阻擋", "error": str(e)})
 
 # --- API Endpoints ---
 @app.route('/api/basins', methods=['GET'])

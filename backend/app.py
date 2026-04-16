@@ -323,31 +323,27 @@ def fetch_official_traffic(basin_id):
             
         status = "順暢 🟢" if avg_speed > 60 else ("車多 🟡" if avg_speed > 40 else "壅塞 🔴")
         
-        # 聯動省道邏輯：國道塞車時，省道作為替代道路車速會受影響
-        congestion_factor = max(0, 90 - avg_speed) / 70.0 # 0.0 ~ 1.0
-        
         if basin_id == 'pinglin':
-            prov_speed = int(50 - (15 * congestion_factor) + random.randint(-4, 4))
-            prov_status = "順暢 🟢" if prov_speed > 40 else "車多 🟡"
             return {
                 "last_update": time.strftime("%H:%M:%S"),
-                "traffic_controls": ["📡 高公局聯動估算", "⚠️ 未取得 TDX 省道金鑰"],
+                "traffic_controls": ["📡 高公局即時路網"],
                 "routes": [
-                    { "route_name": "國道五號 (南港👉坪林)", "avg_speed_kmh": avg_speed, "status": status },
-                    { "route_name": "台9線 北宜 (新店👉坪林)", "avg_speed_kmh": prov_speed, "status": prov_status },
-                    { "route_name": "台9線 北宜 (坪林👉頭城)", "avg_speed_kmh": max(30, prov_speed - 5), "status": prov_status }
+                    { "route_name": "國道五號 (南港👉坪林)", "avg_speed_kmh": avg_speed, "status": status }
+                ],
+                "cameras": [
+                    { "cam_name": "🎥 國五 坪林交控 即時影像", "url": "https://tw.live/cam/?id=NWT0204" },
+                    { "cam_name": "🎥 北宜公路 相關即時影像", "url": "https://tw.live/" }
                 ]
             }
         else:
-            prov_speed = int(45 - (10 * congestion_factor) + random.randint(-4, 4))
-            prov_status = "順暢 🟢" if prov_speed > 35 else "車多 🟡"
             return {
                 "last_update": time.strftime("%H:%M:%S"),
-                "traffic_controls": ["📡 高公局聯動估算", "⚠️ 國三南向動態聯動"],
+                "traffic_controls": ["📡 高公局即時路網"],
                 "routes": [
-                    { "route_name": "國道三號 (安坑👉新店)", "avg_speed_kmh": avg_speed, "status": status },
-                    { "route_name": "台9甲線 新烏路 (新店👉烏來)", "avg_speed_kmh": prov_speed, "status": prov_status },
-                    { "route_name": "北107線 (烏來👉福山)", "avg_speed_kmh": max(30, prov_speed - 5), "status": "山區順暢 🟢" }
+                    { "route_name": "國道三號 (安坑👉新店)", "avg_speed_kmh": avg_speed, "status": status }
+                ],
+                "cameras": [
+                    { "cam_name": "🎥 新店/烏來 即時影像", "url": "https://tw.live/" }
                 ]
             }
     except Exception as e:

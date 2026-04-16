@@ -73,6 +73,19 @@ async function fetchTraffic() {
             });
         }
         
+        if (data.cameras && data.cameras.length > 0) {
+            routesHtml += `<div style="margin-top: 1rem; color: #94a3b8; font-size: 0.85rem; margin-bottom: 0.5rem;">即時監控：</div>`;
+            data.cameras.forEach(c => {
+                routesHtml += `
+                    <div style="margin-bottom: 0.5rem;">
+                        <a href="${c.url}" target="_blank" style="color: #38bdf8; text-decoration: none; font-size: 0.95rem; display: flex; align-items: center; gap: 8px; background: rgba(56, 189, 248, 0.1); padding: 8px 12px; border-radius: 6px; border: 1px solid rgba(56, 189, 248, 0.2); transition: all 0.2s;">
+                            <i class="fa-solid fa-video"></i> ${c.cam_name}
+                        </a>
+                    </div>
+                `;
+            });
+        }
+        
         routesHtml += `<div style="text-align:right; font-size: 0.75rem; color:#64748b;">最後更新: ${data.last_update || '--'}</div>`;
         container.innerHTML = routesHtml;
 

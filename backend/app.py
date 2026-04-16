@@ -242,7 +242,8 @@ INTELLIGENCE_CENTER = {
                 {"route_name": "國道三號 (安坑👉新店)", "avg_speed_kmh": 85, "status": "順暢 🟢"}
             ],
             "cameras": [
-                { "cam_name": "🎥 烏來 即時監控", "url": "https://www.1968services.tw/cam/n3-s-25k+704" }
+                { "cam_name": "📹 CCTV木柵休息站👉新店交流道", "url": "https://www.1968services.tw/cam/n3-s-25k+704" },
+                { "cam_name": "📹 CCTV新店交流道👉木柵休息站", "url": "https://www.1968services.tw/cam/n3-n-26k+700" }
             ]
         }
     },
@@ -344,7 +345,8 @@ def fetch_official_traffic(basin_id):
                     { "route_name": "國道三號 (安坑👉新店)", "avg_speed_kmh": avg_speed, "status": status }
                 ],
                 "cameras": [
-                    { "cam_name": "📹 CCTV 即時路側影像：台9甲線 (烏來端)", "url": "https://www.1968services.tw/cam/n3-s-25k+704" }
+                    { "cam_name": "📹 CCTV木柵休息站👉新店交流道", "url": "https://www.1968services.tw/cam/n3-s-25k+704" },
+                    { "cam_name": "📹 CCTV新店交流道👉木柵休息站", "url": "https://www.1968services.tw/cam/n3-n-26k+700" }
                 ]
             }
     except Exception as e:

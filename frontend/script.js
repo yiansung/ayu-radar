@@ -181,8 +181,11 @@ async function fetchWater(stationId) {
         document.getElementById('h-rain-72h').textContent = `${data.rain_72h !== undefined ? data.rain_72h : '-'} mm`;
         
         // 取得正確的 CWA ID 產生圖表連結
-        let cwaId = stationId === 'pinglin' ? 'C0A53' : 'C2A56';
-        document.getElementById('h-trend-link').href = `https://www.cwa.gov.tw/V8/C/P/Rainfall/Rainfall_PlotImg.html?ID=${cwaId}`;
+        if (stationId === 'pinglin') {
+            document.getElementById('h-trend-link').href = `https://www.cwa.gov.tw/V8/C/W/Town/Town.html?TID=6502000`;
+        } else {
+            document.getElementById('h-trend-link').href = `https://www.cwa.gov.tw/V8/C/P/Rainfall/Rainfall_PlotImg.html?ID=C2A56`;
+        }
         
         setStatusBadge('h-turbidity', data.turbidity_status);
     } catch (e) {

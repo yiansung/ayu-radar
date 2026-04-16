@@ -232,7 +232,7 @@ INTELLIGENCE_CENTER = {
                 {"route_name": "國道五號 (南港👉坪林)", "avg_speed_kmh": 85, "status": "順暢 🟢"}
             ],
             "cameras": [
-                { "cam_name": "🎥 坪林 即時監控", "url": "https://www.1968services.tw/freeway/5/s" }
+                { "cam_name": "📹 CCTV台北👉宜蘭", "url": "https://www.1968services.tw/freeway/5/s" }
             ]
         },
         "wulai": {

@@ -455,14 +455,19 @@ def background_intelligence_poller():
         except Exception as e:
             print(f"❌ [ Poller Critical ] Error: {e}")
             
+            
         time.sleep(300) # 5分鐘更新一次
 
-# 啟動背景機器人
-worker = threading.Thread(target=background_intelligence_poller, daemon=True)
-worker.start()
-
 # --- Zero-Latency Intelligence Engine (Background Worker) ---
-# (前略：已實作 INTELLIGENCE_CENTER 與 poller 邏輯)
+_poller_started = False
+
+@app.before_request
+def ensure_poller():
+    global _poller_started
+    if not _poller_started:
+        _poller_started = True
+        worker = threading.Thread(target=background_intelligence_poller, daemon=True)
+        worker.start()
 
 @app.route('/api/live/traffic/<basin_id>', methods=['GET'])
 def get_live_traffic(basin_id):

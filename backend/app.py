@@ -331,8 +331,7 @@ def fetch_official_traffic(basin_id):
                     { "route_name": "國道五號 (南港👉坪林)", "avg_speed_kmh": avg_speed, "status": status }
                 ],
                 "cameras": [
-                    { "cam_name": "🎥 國五 坪林交控 即時影像", "url": "https://tw.live/cam/?id=NWT0204" },
-                    { "cam_name": "🎥 北宜公路 相關即時影像", "url": "https://tw.live/" }
+                    { "cam_name": "🎥 坪林 即時監控", "url": "https://www.1968services.tw/freeway/5/s" }
                 ]
             }
         else:
@@ -343,7 +342,7 @@ def fetch_official_traffic(basin_id):
                     { "route_name": "國道三號 (安坑👉新店)", "avg_speed_kmh": avg_speed, "status": status }
                 ],
                 "cameras": [
-                    { "cam_name": "🎥 新店/烏來 即時影像", "url": "https://tw.live/" }
+                    { "cam_name": "🎥 烏來 即時監控", "url": "https://www.1968services.tw/cam/n3-s-25k+704" }
                 ]
             }
     except Exception as e:

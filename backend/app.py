@@ -163,7 +163,8 @@ def debug_status():
 def ping_cwa():
     try:
         import traceback
-        res = fetch_official_weather("CAAD90")
+        # Check water API to see why it fails
+        res = fetch_official_water("pinglin")
         return jsonify({"result": res, "status": "success"})
     except Exception as e:
         return jsonify({"error": str(e), "trace": traceback.format_exc()})

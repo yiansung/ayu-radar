@@ -184,7 +184,7 @@ async function fetchWater(stationId) {
         if (currentBasinId === 'pinglin') {
             document.getElementById('h-trend-link').href = `https://www.cwa.gov.tw/V8/C/P/Rainfall/Rainfall_PlotImg.html?ID=C0A53`;
         } else {
-            document.getElementById('h-trend-link').href = `https://www.cwa.gov.tw/V8/C/P/Rainfall/Rainfall_PlotImg.html?ID=C0A56`;
+            document.getElementById('h-trend-link').href = `https://www.cwa.gov.tw/V8/C/P/Rainfall/Rainfall_PlotImg.html?ID=C2A56`;
         }
         
         setStatusBadge('h-turbidity', data.turbidity_status);

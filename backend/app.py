@@ -229,18 +229,20 @@ INTELLIGENCE_CENTER = {
             "last_update": "Syncing", 
             "traffic_controls": [], 
             "routes": [
-                {"route_name": "國道五號 (南港👉坪林)", "avg_speed_kmh": 85, "status": "順暢 🟢"},
-                {"route_name": "台9線 北宜公路 (新店👉坪林)", "avg_speed_kmh": 45, "status": "正常 🟢"},
-                {"route_name": "台9線 北宜公路 (坪林👉頭城)", "avg_speed_kmh": 40, "status": "山區順暢 🟢"}
+                {"route_name": "國道五號 (南港👉坪林)", "avg_speed_kmh": 85, "status": "順暢 🟢"}
+            ],
+            "cameras": [
+                { "cam_name": "🎥 坪林 即時監控", "url": "https://www.1968services.tw/freeway/5/s" }
             ]
         },
         "wulai": {
             "last_update": "Syncing", 
             "traffic_controls": [], 
             "routes": [
-                {"route_name": "國道三號 (安坑👉新店)", "avg_speed_kmh": 85, "status": "順暢 🟢"},
-                {"route_name": "台9甲線 新烏路 (新店👉烏來)", "avg_speed_kmh": 50, "status": "正常 🟢"},
-                {"route_name": "北107線 (烏來👉福山)", "avg_speed_kmh": 40, "status": "山路順暢 🟢"}
+                {"route_name": "國道三號 (安坑👉新店)", "avg_speed_kmh": 85, "status": "順暢 🟢"}
+            ],
+            "cameras": [
+                { "cam_name": "🎥 烏來 即時監控", "url": "https://www.1968services.tw/cam/n3-s-25k+704" }
             ]
         }
     },

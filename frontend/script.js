@@ -182,7 +182,7 @@ async function fetchWater(stationId) {
         
         // 取得正確的 CWA ID 產生圖表連結
         if (stationId === 'pinglin') {
-            document.getElementById('h-trend-link').href = `https://www.cwa.gov.tw/V8/C/W/Town/Town.html?TID=6502000`;
+            document.getElementById('h-trend-link').href = `https://www.cwa.gov.tw/V8/C/P/Rainfall/Rainfall_PlotImg.html?ID=C0A53`;
         } else {
             document.getElementById('h-trend-link').href = `https://www.cwa.gov.tw/V8/C/P/Rainfall/Rainfall_PlotImg.html?ID=C2A56`;
         }

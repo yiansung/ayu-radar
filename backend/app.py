@@ -249,7 +249,6 @@ def fetch_official_weather(cwa_sid):
         data = resp.json()
         if data.get('success') == 'true' and data['records']['Station']:
             obs = data['records']['Station'][0]
-            # O-A0003-001 的 WeatherElement 通常是字典結構
             we = obs.get('WeatherElement', {})
             
             # 如果是字典，直接讀取；如果是列表（相容性），轉換為字典
@@ -257,14 +256,26 @@ def fetch_official_weather(cwa_sid):
                 we = {item['ElementName']: item['ElementValue'] for item in we}
             
             weather_desc = we.get('Weather', "晴時多雲")
-            if weather_desc == "-99" or not weather_desc: weather_desc = "晴朗"
+            rain_now_str = we.get('Now', {}).get('Precipitation', "0.0") if isinstance(we.get('Now'), dict) else "0.0"
+            try:
+                rain_now = float(rain_now_str) if rain_now_str != "-99" else 0.0
+            except:
+                rain_now = 0.0
             
-            temp = float(we.get('AirTemperature', 25.0))
-            humidity = float(we.get('RelativeHumidity', 0.75))
+            # 智慧天氣描述：若 O-A0003-001 測站雨量大於 0，強制更正為降雨
+            if weather_desc == "-99" or not weather_desc:
+                weather_desc = "降雨中 🌧️" if rain_now > 0 else "晴朗多雲"
+            elif rain_now > 0 and "雨" not in weather_desc:
+                weather_desc = "降雨中 🌧️"
+            
+            temp_str = we.get('AirTemperature', "25.0")
+            temp = float(temp_str) if temp_str != "-99" and temp_str else 25.0
+            hum_str = we.get('RelativeHumidity', "75")
+            humidity = float(hum_str) if hum_str != "-99" and hum_str else 75.0
             wind = we.get('WindSpeed', "0.0")
             uv = we.get('UVIndex', "0")
             
-            # 簡單體感溫度計算 (Heat Index 簡化版)
+            # 簡單體感溫度計算
             feels_like = temp + (0.5 * (temp - 15)) if temp > 20 else temp
             
             return {
@@ -283,23 +294,18 @@ def fetch_official_weather(cwa_sid):
     return None
 
 def fetch_official_traffic(basin_id):
-    """內部函數：實際對接高公局公路路況 JSON"""
+    """內部函數：實際對接高公局公路路況 JSON 並聯動省道估算"""
     try:
         # 高公局開放資料：即時路況時速
         url = "https://tisvcloud.freeway.gov.tw/data/roadlevel_freeway.json"
         
-        # 國五南向 (南港-坪林) 的關鍵路段 ID 前綴
-        # 實務上 0005 代表國五，南向包含 00050 等段
-        target_highway = "0005" 
-        
+        target_highway = "0005" if basin_id == 'pinglin' else "0003"
         resp = requests.get(url, timeout=10, verify=False)
         data = resp.json()
         
         speeds = []
         if 'RoadLevels' in data:
             for item in data['RoadLevels']:
-                # 這裡過濾國五南向路段 (南港0k -> 坪林14k)
-                # 簡單過濾法：SectionID 包含 0005 且是代表南下或特定段
                 sid = item.get('SectionID', '')
                 if sid.startswith(target_highway) and item.get('Value', 0) > 0:
                     speeds.append(int(item['Value']))
@@ -307,29 +313,35 @@ def fetch_official_traffic(basin_id):
         if len(speeds) > 0:
             avg_speed = sum(speeds) // len(speeds)
         else:
-            # 若官方 API 無數據，回退到戰略預估
             avg_speed = random.randint(75, 90)
             
         status = "順暢 🟢" if avg_speed > 60 else ("車多 🟡" if avg_speed > 40 else "壅塞 🔴")
         
+        # 聯動省道邏輯：國道塞車時，省道作為替代道路車速會受影響
+        congestion_factor = max(0, 90 - avg_speed) / 70.0 # 0.0 ~ 1.0
+        
         if basin_id == 'pinglin':
+            prov_speed = int(50 - (15 * congestion_factor) + random.randint(-4, 4))
+            prov_status = "順暢 🟢" if prov_speed > 40 else "車多 🟡"
             return {
                 "last_update": time.strftime("%H:%M:%S"),
-                "traffic_controls": ["📡 數據源：高公局實時路網", "⚠️ 國五南向：實時車速監控中"],
+                "traffic_controls": ["📡 高公局聯動估算", "⚠️ 未取得 TDX 省道金鑰"],
                 "routes": [
-                    { "route_name": "國道五號 (南港👉坪林)", "avg_speed_kmh": avg_speed, "travel_time_mins": int(15 * (90/max(avg_speed, 1))), "status": status },
-                    { "route_name": "台9線 北宜公路 (新店👉坪林)", "avg_speed_kmh": 45, "travel_time_mins": 55, "status": "正常 🟢" },
-                    { "route_name": "台9線 北宜公路 (坪林👉頭城)", "avg_speed_kmh": 40, "travel_time_mins": 45, "status": "山區順暢 🟢" }
+                    { "route_name": "國道五號 (南港👉坪林)", "avg_speed_kmh": avg_speed, "status": status },
+                    { "route_name": "台9線 北宜 (新店👉坪林)", "avg_speed_kmh": prov_speed, "status": prov_status },
+                    { "route_name": "台9線 北宜 (坪林👉頭城)", "avg_speed_kmh": max(30, prov_speed - 5), "status": prov_status }
                 ]
             }
         else:
+            prov_speed = int(45 - (10 * congestion_factor) + random.randint(-4, 4))
+            prov_status = "順暢 🟢" if prov_speed > 35 else "車多 🟡"
             return {
                 "last_update": time.strftime("%H:%M:%S"),
-                "traffic_controls": ["📡 數據源：高公局/省道資料庫", "⚠️ 國三南向：往新店端正常"],
+                "traffic_controls": ["📡 高公局聯動估算", "⚠️ 國三南向動態聯動"],
                 "routes": [
-                    { "route_name": "國道三號 (安坑👉新店)", "avg_speed_kmh": 85, "travel_time_mins": 10, "status": "順暢 🟢" },
-                    { "route_name": "台9甲線 新烏路 (新店👉烏來)", "avg_speed_kmh": 48, "travel_time_mins": 25, "status": "順暢 🟢" },
-                    { "route_name": "北107線 (烏來👉福山)", "avg_speed_kmh": 40, "travel_time_mins": 15, "status": "正常 🟢" }
+                    { "route_name": "國道三號 (安坑👉新店)", "avg_speed_kmh": avg_speed, "status": status },
+                    { "route_name": "台9甲線 新烏路 (新店👉烏來)", "avg_speed_kmh": prov_speed, "status": prov_status },
+                    { "route_name": "北107線 (烏來👉福山)", "avg_speed_kmh": max(30, prov_speed - 5), "status": "山區順暢 🟢" }
                 ]
             }
     except Exception as e:
@@ -337,32 +349,46 @@ def fetch_official_traffic(basin_id):
     return None
 
 def fetch_official_water(station_id):
-    """內部函數：實際對接水利署實時水位 API (OData/JSON)"""
+    """內部函數：實際對接水利署水位 API 並結合 CWA 雨勢 API"""
     try:
-        # 水利署 FHY 實時水位觀測站資料
-        # 坪林橋: 1140H048, 福山橋: 1140H096
         wra_id = "1140H048" if station_id == "pinglin" else "1140H096"
-        url = f"https://fhy.wra.gov.tw/fhyv2/api/v1/Water/RealTime/Station"
+        cwa_rain_id = "C0A530" if station_id == "pinglin" else "C2A560"
         
-        # 獲取所有站點並過濾（實務上可加 OData $filter 參數，此處為了穩定先全抓後篩）
-        resp = requests.get(url, timeout=10, verify=False)
-        data = resp.json()
+        # 1. 取真實水位
+        url_water = f"https://fhy.wra.gov.tw/fhyv2/api/v1/Water/RealTime/Station"
+        resp_w = requests.get(url_water, timeout=10, verify=False)
+        data_w = resp_w.json()
         
         level = None
-        for item in data:
+        for item in data_w:
             if item.get('StationNo') == wra_id:
                 level = item.get('WaterLevel')
                 break
+                
+        # 2. 取真實累積雨量
+        rain_1h = 0.0
+        rain_24h = 0.0
+        url_rain = f"https://opendata.cwa.gov.tw/api/v1/rest/datastore/O-A0002-001?Authorization={CWA_TOKEN}&StationId={cwa_rain_id}"
+        try:
+            resp_r = requests.get(url_rain, timeout=5, verify=False)
+            data_r = resp_r.json()
+            if data_r.get('success') == 'true' and data_r['records']['Station']:
+                re = data_r['records']['Station'][0].get('RainfallElement', {})
+                r_1h_str = re.get('Past1hr', {}).get('Precipitation', "0.0")
+                r_24h_str = re.get('Past24hr', {}).get('Precipitation', "0.0")
+                rain_1h = float(r_1h_str) if r_1h_str != "-99" else 0.0
+                rain_24h = float(r_24h_str) if r_24h_str != "-99" else 0.0
+        except Exception as re:
+            print(f"Rain Sync Error for {cwa_rain_id}: {re}")
         
         if level is not None:
             warn_level = 107.5 if station_id == "pinglin" else 122.0
-            rain_24h = round(random.uniform(0.0, 5.0), 1) # 降雨暫由雷達預估
             return {
                 "station_id": station_id,
                 "station_name": "坪林橋" if station_id == "pinglin" else "福山橋",
                 "current_level_m": round(float(level), 2),
                 "warning_level_m": warn_level,
-                "rain_accumulated_1h_mm": 0.0,
+                "rain_accumulated_1h_mm": rain_1h,
                 "rain_accumulated_24h_mm": rain_24h,
                 "status": "安全水位 🟢" if float(level) < warn_level else "警戒水位 🔴",
                 "turbidity_status": "溪水清澈 🟢" if rain_24h < 10 else "略有混濁 🟡",
@@ -379,7 +405,7 @@ def background_intelligence_poller():
     while True:
         try:
             # 1. 更新氣象 (坪林, 福山)
-            for sid, cwa_id in [("pinglin", "C0A530"), ("wulai", "C2A560")]:
+            for sid, cwa_id in [("pinglin", "CAAD90"), ("wulai", "C2A560")]:
                 print(f"📡 [ Weather ] Syncing {sid} ({cwa_id})...")
                 result = fetch_official_weather(cwa_id)
                 if result:
@@ -456,7 +482,7 @@ def get_live_weather(station_id):
     data = INTELLIGENCE_CENTER["weather"].get(sid)
     if not data:
         # 初次啟動備援 (同步外部資料)
-        cwa_id = "C0A530" if sid == "pinglin" else "C2A560"
+        cwa_id = "CAAD90" if sid == "pinglin" else "C2A560"
         result = fetch_official_weather(cwa_id)
         if result: 
             safe_result = {k: (v if v is not None else "--") for k, v in result.items()}

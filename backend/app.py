@@ -175,17 +175,6 @@ def ping_cwa():
     except Exception as e:
         return jsonify({"error": str(e), "trace": traceback.format_exc()})
 
-@app.route('/api/debug/test_forecast')
-def debug_test_forecast():
-    try:
-        results = {}
-        for sid in ['pinglin', 'wulai']:
-            res = fetch_official_forecast(sid)
-            results[sid] = res
-        return jsonify(results)
-    except Exception as e:
-        return jsonify({"error": str(e)})
-
 # --- API Endpoints ---
 @app.route('/api/basins', methods=['GET'])
 def get_basins():
@@ -303,6 +292,9 @@ def fetch_official_weather(cwa_sid):
             station_name = "坪林" if cwa_sid == "CAAD90" else ("烏來" if cwa_sid == "C2A560" else obs['StationName'])
             
             return {
+                "station_name": station_name,
+                "current_temp": temp,
+                "feels_like_temp": round(feels_like, 1),
                 "humidity": f"{int(humidity * 100)}%" if humidity < 1 else f"{humidity}%",
                 "wind_speed": f"{wind} m/s",
                 "uv_index": uv if uv != "-99" else "0",
@@ -937,13 +929,15 @@ def init_mock_telemetry():
         db.session.commit()
 
 
-# --- Ayu Mentor AI API ---
+# --- Ayu Master AI API ---
 
-AYU_MENTOR_SYSTEM_PROMPT = """
-你是一位資深的「香魚導師 (Ayu Mentor)」，精通「友釣 (Tomozuri)」技術。
+# --- Ayu Master AI API ---
+
+AY_MASTER_SYSTEM_PROMPT = """
+你是一位資深的「香魚大師 (Ayu Master)」，精通「友釣 (Tomozuri)」技術。
 你的知識來源包含日本最先進的友釣技術（如 Tsuribito、郡上八幡的戰術）以及台灣北部（坪林北勢溪、烏來南勢溪）的在地溪流特性。
 
-你的說話風格：專業、親切、誠懇，像是一位非常有經驗的老釣手在跟晚輩分享經驗。
+你的說話風格：專業、親切、誠誠，像是一位非常有經驗的老釣手在跟晚輩分享經驗。
 你可以使用 Traditional Chinese (繁體中文) 回答，但必要時可以保留日文專業術語並附上解釋。
 
 核心知識要點：
@@ -973,30 +967,25 @@ def mentor_chat():
         # 每一次呼叫都重新 Configure 確保 Key 生效
         genai.configure(api_key=GEMINI_API_KEY)
 
-        # 診斷：強制抓取可用清單
+        # 決定型號清單
         try:
             available = [m.name for m in genai.list_models()]
-            print(f"DEBUG: Found models {available}")
         except Exception as list_err:
-            return jsonify({"reply": f"❌ 無法讀取型號清單，可能是 API Key 權限不足或未啟用 API。({str(list_err)[:50]})"}), 500
+            return jsonify({"reply": f"❌ 無法讀取型號清單，可能是 API Key 權限不足。({str(list_err)[:50]})"}), 500
 
-        # 決定型號
-        # 1. 優先選 1.5-flash
-        # 2. 次選 1.0-pro (穩定版)
-        # 3. 都不行就選清單裡第一個支援 generateContent 的
+        # 型號選擇邏輯
         selected_model = "gemini-1.5-flash"
         if "models/gemini-1.5-flash" not in available:
             if "models/gemini-pro" in available:
                 selected_model = "gemini-pro"
             elif available:
-                # 抓取第一個可用的型號
                 selected_model = available[0].replace("models/", "")
             else:
-                return jsonify({"reply": "🚫 您的 API Key 目前不支援任何生成型號，請檢查 Google AI Studio 設定。"}), 500
+                return jsonify({"reply": "🚫 您的 API Key 目前不支援任何生成型號。"}), 500
 
         model = genai.GenerativeModel(
             model_name=selected_model,
-            system_instruction=AYU_MENTOR_SYSTEM_PROMPT
+            system_instruction=AY_MASTER_SYSTEM_PROMPT
         )
 
         chat_history = []
@@ -1015,14 +1004,20 @@ def mentor_chat():
     except Exception as e:
         error_msg = str(e)
         print(f"Gemini Error: {error_msg}")
-        return jsonify({"reply": f"😵 導師現在有點累，請稍後再問我。(錯誤代碼: {error_msg[:100]})", "available": available if 'available' in locals() else []}), 500
+        return jsonify({"reply": f"😵 大師現在有點累，請稍後再問我。(錯誤代碼: {error_msg[:100]})"}), 500
 
-# --- App Initialization (Critical for Cloud/Gunicorn) ---
+# --- App Initialization ---
+_poller_started = False
+
 with app.app_context():
     db.create_all()
     seed_data_from_json()
     init_mock_telemetry()
+    
+    # Start background poller if not already started
+    if not _poller_started:
+        threading.Thread(target=background_intelligence_poller, daemon=True).start()
+        _poller_started = True
 
 if __name__ == '__main__':
-    # Industrial Stability: No Debug Mode, No Reloader on Mac
     app.run(host='0.0.0.0', port=5001, debug=False, threaded=True)

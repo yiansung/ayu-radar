@@ -605,24 +605,24 @@ document.addEventListener('DOMContentLoaded', () => {
     setInterval(fetchAndRenderBasin, 120000); // 2分鐘輪詢一次
 });
 
-// --- Ayu Mentor Chat Logic ---
-let mentorChatHistory = [];
+// --- Ayu Master Chat Logic ---
+let masterChatHistory = [];
 
-window.openMentorChat = function() {
-    const modal = document.getElementById('mentor-modal');
+window.openMasterChat = function() {
+    const modal = document.getElementById('master-modal');
     if (modal) modal.style.display = 'flex';
-    document.getElementById('mentor-input')?.focus();
+    document.getElementById('master-input')?.focus();
 };
 
-window.closeMentorChat = function(e) {
-    const modal = document.getElementById('mentor-modal');
+window.closeMasterChat = function(e) {
+    const modal = document.getElementById('master-modal');
     if (modal) modal.style.display = 'none';
 };
 
-window.sendMentorMessage = async function() {
-    const input = document.getElementById('mentor-input');
-    const msgContainer = document.getElementById('mentor-messages');
-    const typingIndicator = document.getElementById('mentor-typing');
+window.sendMasterMessage = async function() {
+    const input = document.getElementById('master-input');
+    const msgContainer = document.getElementById('master-messages');
+    const typingIndicator = document.getElementById('master-typing');
     
     const text = input.value.trim();
     if (!text) return;
@@ -641,7 +641,7 @@ window.sendMentorMessage = async function() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 message: text,
-                history: mentorChatHistory
+                history: masterChatHistory
             })
         });
         const data = await res.json();
@@ -652,23 +652,23 @@ window.sendMentorMessage = async function() {
         if (data.reply) {
             appendMessage('ai', data.reply);
             // 4. Update History
-            mentorChatHistory.push({ role: 'user', content: text });
-            mentorChatHistory.push({ role: 'model', content: data.reply });
+            masterChatHistory.push({ role: 'user', content: text });
+            masterChatHistory.push({ role: 'model', content: data.reply });
             
             // Keep history lean (last 10 rounds)
-            if (mentorChatHistory.length > 20) {
-                mentorChatHistory = mentorChatHistory.slice(-20);
+            if (masterChatHistory.length > 20) {
+                masterChatHistory = masterChatHistory.slice(-20);
             }
         }
     } catch (err) {
         if (typingIndicator) typingIndicator.style.display = 'none';
-        appendMessage('ai', "😵 導師連線中斷，請稍後再試。");
+        appendMessage('ai', "😵 大師連線中斷，請稍後再試。");
         console.error(err);
     }
 };
 
 function appendMessage(role, text) {
-    const container = document.getElementById('mentor-messages');
+    const container = document.getElementById('master-messages');
     if (!container) return;
     
     const div = document.createElement('div');

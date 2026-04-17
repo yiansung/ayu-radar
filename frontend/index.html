@@ -23,13 +23,13 @@
                 <div class="sunline-subtitle-bottom">友釣戰情室 <span style="font-size: 1.2rem; letter-spacing: 1px;">| AYU STAR RADAR</span></div>
             </div>
 
-            <!-- Ayu Mentor Hero Trigger -->
-            <div class="mentor-trigger-area" onclick="window.openMentorChat()">
+            <!-- Ayu Master Hero Trigger -->
+            <div class="master-trigger-area" onclick="window.openMasterChat()">
                 <div style="font-size: 1.5rem; margin-bottom: 5px;">🤖</div>
-                <div style="font-weight: 800; color: #38bdf8; font-size: 1.3rem; letter-spacing: 1px;">AI 香魚導師</div>
-                <div class="mentor-desc">由日系戰術與即時水情驅動的智慧助理</div>
+                <div style="font-weight: 800; color: #38bdf8; font-size: 1.3rem; letter-spacing: 1px;">AI 香魚大師</div>
+                <div class="master-desc">由日系戰術與即時水情驅動的智慧助理</div>
                 <div style="margin-top: 15px; background: rgba(56, 189, 248, 0.2); color: #7dd3fc; font-size: 0.8rem; padding: 6px 15px; border-radius: 20px; display: inline-block; border: 1px solid rgba(56, 189, 248, 0.4); font-weight: bold;">
-                    立即向導師諮詢今日戰略 ➔
+                    立即向大師諮詢今日戰略 ➔
                 </div>
             </div>
         </header>
@@ -206,26 +206,26 @@
         <button class="lightbox-btn" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.5); border: none; color: white; font-size: 2rem; padding: 10px 15px; cursor: pointer; border-radius: 5px; z-index: 3010;" onclick="window.nextLightboxImage(event, 1)">❯</button>
     </div>
 
-    <!-- Ayu Mentor Chat Modal -->
-    <div id="mentor-modal" class="mentor-chat-modal" onclick="window.closeMentorChat(event)">
-        <div class="mentor-chat-window" onclick="event.stopPropagation()">
-            <div class="mentor-header">
-                <div class="mentor-avatar">🐟</div>
-                <div class="mentor-info" style="flex: 1;">
-                    <h4>香魚導師 Ayu Mentor</h4>
+    <!-- Ayu Master Chat Modal -->
+    <div id="master-modal" class="master-chat-modal" onclick="window.closeMasterChat(event)">
+        <div class="master-chat-window" onclick="event.stopPropagation()">
+            <div class="master-header">
+                <div class="master-avatar">🐟</div>
+                <div class="master-info" style="flex: 1;">
+                    <h4>香魚大師 Ayu Master</h4>
                     <p>● 線上中 - 精通日系戰術與在地水情</p>
                 </div>
-                <span style="cursor: pointer; font-size: 1.5rem; color: #64748b;" onclick="window.closeMentorChat(event)">&times;</span>
+                <span style="cursor: pointer; font-size: 1.5rem; color: #64748b;" onclick="window.closeMasterChat(event)">&times;</span>
             </div>
-            <div id="mentor-messages" class="chat-messages">
+            <div id="master-messages" class="chat-messages">
                 <div class="message ai">
-                    釣友您好！我是您的專屬香魚導師。不論是想詢問今日**坪林或烏來**的戰術評估，或是想精進**友釣線結與仕掛**知識，我都隨時準備為您解答。
+                    釣友您好！我是您的專屬香魚大師。不論是想詢問今日**坪林或烏來**的戰術評估，或是想精進**友釣線結與仕掛**知識，我都隨時準備為您解答。
                 </div>
             </div>
-            <div id="mentor-typing" class="typing-indicator">導師正在思考戰術中...</div>
+            <div id="master-typing" class="typing-indicator">大師正在思考戰術中...</div>
             <div class="chat-input-area">
-                <input type="text" id="mentor-input" placeholder="請輸入您的問題..." onkeypress="if(event.key==='Enter') window.sendMentorMessage()">
-                <button class="send-btn" onclick="window.sendMentorMessage()">送出</button>
+                <input type="text" id="master-input" placeholder="請輸入您的問題..." onkeypress="if(event.key==='Enter') window.sendMasterMessage()">
+                <button class="send-btn" onclick="window.sendMasterMessage()">送出</button>
             </div>
         </div>
     </div>

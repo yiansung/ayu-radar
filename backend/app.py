@@ -592,7 +592,11 @@ def system_status():
         "last_error": LAST_POLLER_ERROR,
         "server_time": time.strftime("%Y-%m-%d %H:%M:%S"),
         "pid": os.getpid(),
-        "version": "v1.4-unified"
+        "live_data": {
+            "pinglin_weather": INTELLIGENCE_CENTER["weather"]["pinglin"],
+            "pinglin_rain": INTELLIGENCE_CENTER["water"]["pinglin"]
+        },
+        "version": "v1.5-final-sync"
     })
 
 @app.before_request

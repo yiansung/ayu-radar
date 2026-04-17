@@ -99,7 +99,8 @@ async function fetchTraffic() {
 // 獲取天氣資料 (CWA 排版)
 async function fetchWeather(stationId) {
     try {
-        const res = await fetch(`${API_BASE}/live/weather/${stationId}`);
+        // 加入 cache-buster 防止瀏覽器快取舊數據
+        const res = await fetch(`${API_BASE}/live/weather/${stationId}?t=${Date.now()}`);
         if (!res.ok) throw new Error('Weather API 400');
         const data = await res.json();
 
@@ -151,7 +152,8 @@ async function fetchWeather(stationId) {
 // 獲取水文站資料
 async function fetchWater(stationId) {
     try {
-        const res = await fetch(`${API_BASE}/live/water/${stationId}`);
+        // 加入 cache-buster 防止瀏覽器快取舊數據
+        const res = await fetch(`${API_BASE}/live/water/${stationId}?t=${Date.now()}`);
         if (!res.ok) throw new Error('Water API 400');
         const data = await res.json();
 

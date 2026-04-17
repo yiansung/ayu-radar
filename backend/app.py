@@ -908,13 +908,24 @@ def mentor_chat():
         if not GEMINI_API_KEY:
             return jsonify({"reply": "⚠️ 系統尚未設定 Gemini API Key，請連繫站長。"}), 200
 
+        # 診斷：嘗試列出可用模型 (供後台 Log 查看)
+        available_models = []
+        try:
+            available_models = [m.name for m in genai.list_models()]
+            print(f"Available models: {available_models}")
+        except:
+            pass
+
+        # 優先選擇 flash，若不行則嘗試最通用的 gemini-pro
+        selected_model = "gemini-1.5-flash"
+        if available_models and "models/gemini-1.5-flash" not in available_models:
+             if "models/gemini-pro" in available_models:
+                 selected_model = "gemini-pro"
+
         model = genai.GenerativeModel(
-            model_name="gemini-1.5-flash",
+            model_name=selected_model,
             system_instruction=AYU_MENTOR_SYSTEM_PROMPT
         )
-        
-        # 診斷用：如果出錯前可以先列出可用模型 (僅在開發/報錯時建議開啟)
-        # print("Available models:", [m.name for m in genai.list_models()])
 
         # 格式化歷史紀錄
         chat_history = []

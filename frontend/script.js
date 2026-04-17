@@ -112,9 +112,9 @@ async function fetchWeather(stationId) {
         document.getElementById('w-uv').textContent = data.uv_index || '--';
         
         // Render 48H Rainfall Probability (merged from strategic assessment)
-        const popEl = document.getElementById('w-pop-48h');
+        const popEl = document.getElementById('w-pop-12h');
         if (popEl) {
-            popEl.textContent = `${data.pop_48h !== undefined ? data.pop_48h : '--'}%`;
+            popEl.textContent = `${data.pop_12h !== undefined ? data.pop_12h : '-'}%`;
         }
         
         // Icon logic

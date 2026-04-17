@@ -231,14 +231,14 @@ INTELLIGENCE_CENTER = {
             "station_name": "坪林", "current_temp": 24.5, "feels_like_temp": 26.0, 
             "humidity": "75%", "wind_speed": "1.2 m/s", "uv_index": "2", 
             "weather_desc": "晴時多雲", "weather_warning": "", 
-            "pop_48h": 0, "tactical_advice": "✅ 連線穩定，正在獲取實時預報...",
+            "pop_12h": "-", "tactical_advice": "✅ 連線穩定，正在獲取實時預報...",
             "last_update": "Syncing"
         },
         "wulai": {
             "station_name": "烏來", "current_temp": 23.5, "feels_like_temp": 25.0, 
             "humidity": "80%", "wind_speed": "0.8 m/s", "uv_index": "1", 
             "weather_desc": "多雲", "weather_warning": "", 
-            "pop_48h": 0, "tactical_advice": "✅ 連線穩定，正在獲獲實時預報...",
+            "pop_12h": "-", "tactical_advice": "✅ 連線穩定，正在獲獲實時預報...",
             "last_update": "Syncing"
         }
     },
@@ -266,8 +266,8 @@ INTELLIGENCE_CENTER = {
         }
     },
     "water": {
-        "pinglin": {"station_id": "pinglin", "station_name": "坪林", "rain_24h": 0.0, "rain_72h": 0.0, "turbidity_status": "溪水清澈 🟢", "last_update": "Syncing"},
-        "wulai": {"station_id": "wulai", "station_name": "福山", "rain_24h": 0.0, "rain_72h": 0.0, "turbidity_status": "溪水清澈 🟢", "last_update": "Syncing"}
+        "pinglin": {"station_id": "pinglin", "station_name": "坪林", "rain_24h": "-", "rain_72h": "-", "turbidity_status": "連線中...", "last_update": "Syncing"},
+        "wulai": {"station_id": "wulai", "station_name": "福山", "rain_24h": "-", "rain_72h": "-", "turbidity_status": "連線中...", "last_update": "Syncing"}
     },
     "last_sync": "Initializing"
 }
@@ -275,7 +275,7 @@ INTELLIGENCE_CENTER = {
 def fetch_official_weather(cwa_sid):
     """內部函數：實際連線氣象局，解析全量氣象要素"""
     try:
-        url = f"https://opendata.cwa.gov.tw/api/v1/rest/datastore/O-A0003-001?Authorization={CWA_TOKEN}&StationId={cwa_sid}"
+        url = f"https://opendata.cwa.gov.tw/api/v1/rest/datastore/O-A0003-001?Authorization={CWA_TOKEN}&format=JSON&StationId={cwa_sid}"
         resp = requests.get(url, timeout=5, verify=False)
         data = resp.json()
         if data.get('success') == 'true' and data['records']['Station']:
@@ -354,17 +354,18 @@ def fetch_official_forecast(basis_name):
         
         if not pop_list: return None
         
-        max_pop = max(pop_list)
-        summary_wx = "/".join(list(set(wx_list)))
+        # 改為抓取未來 12h (前 2 組) 的最高降雨率
+        max_pop = max(pop_list[:2]) if pop_list else 0
+        summary_wx = wx_list[0] if wx_list else "多雲"
         
-        advice = "✅ 48H 內部氣象穩定，預期水位持平且清澈，非常適合長征作釣。"
+        advice = "✅ 12H 短期氣象穩定，適合即刻進場作釣。"
         if max_pop >= 70 or '雷' in summary_wx or '大雨' in summary_wx:
-            advice = "⚠️ 預期有強降雨/雷雨風險，溪水可能迅速暴漲，建議暫緩出軍或隨時準備撤離計畫。"
+            advice = "⚠️ 預報有強降雨/雷雨風險，溪水可能迅速暴漲，建議暫緩出軍。"
         elif max_pop >= 40 or '雨' in summary_wx:
-            advice = "⚠️ 天氣不穩定，降雨機率增加，溪水可能起色，建議縮短作釣時間並觀察水面。"
+            advice = "⚠️ 天氣不穩定，短期降雨機率增加，請密切注意水色與水位。"
             
         return {
-            "pop_48h": max_pop,
+            "pop_12h": max_pop,
             "tactical_advice": advice,
             "wx_summary": summary_wx
         }
@@ -430,18 +431,19 @@ def fetch_official_water(station_id):
         
         rain_24h = 0.0
         rain_72h = 0.0
-        url_rain = f"https://opendata.cwa.gov.tw/api/v1/rest/datastore/O-A0002-001?Authorization={CWA_TOKEN}&StationId={cwa_rain_id}"
+        url_rain = f"https://opendata.cwa.gov.tw/api/v1/rest/datastore/O-A0002-001?Authorization={CWA_TOKEN}&format=JSON&StationId={cwa_rain_id}"
         
         try:
             resp_r = requests.get(url_rain, timeout=5, verify=False)
             data_r = resp_r.json()
             if data_r.get('success') == 'true' and data_r['records']['Station']:
                 re = data_r['records']['Station'][0].get('RainfallElement', {})
-                r_24h_str = re.get('Past24hr', {}).get('Precipitation', "0.0")
-                r_72h_str = re.get('Past3days', {}).get('Precipitation', "0.0")
+                # 兼容大小寫與不同格式的雨量欄位
+                r_24h_str = re.get('Past24hr', re.get('Past24Hr', {})).get('Precipitation', "0.0")
+                r_72h_str = re.get('Past3days', re.get('Past3Days', {})).get('Precipitation', "0.0")
                 
-                rain_24h = float(r_24h_str) if r_24h_str != "-99" else 0.0
-                rain_72h = float(r_72h_str) if r_72h_str != "-99" else 0.0
+                rain_24h = float(r_24h_str) if r_24h_str != "-99" and r_24h_str != " " else 0.0
+                rain_72h = float(r_72h_str) if r_72h_str != "-99" and r_72h_str != " " else 0.0
         except Exception as re:
             print(f"Rain Sync Error for {cwa_rain_id}: {re}")
             return None
@@ -469,13 +471,13 @@ def background_intelligence_poller():
                 print(f"📡 [ Weather ] Syncing {sid} ({cwa_id})...")
                 result = fetch_official_weather(cwa_id)
                 if result:
-                    # 同步獲取 48h 預報與戰術評估
+                    # 同步獲取 12h 預報與戰術評估
                     forecast = fetch_official_forecast(sid)
                     if forecast:
                         result.update(forecast)
                     
                     INTELLIGENCE_CENTER["weather"][sid] = result
-                    print(f"✅ [ Weather ] {sid} Synced: {result['current_temp']}°C (Tactical: {result.get('pop_48h','--')}%)")
+                    print(f"✅ [ Weather ] {sid} Synced: {result['current_temp']}°C (Tactical: {result.get('pop_12h','--')}%)")
                 else:
                     print(f"⚠️ [ Weather ] {sid} Sync failed, using previous data.")
             
@@ -490,20 +492,9 @@ def background_intelligence_poller():
                 result = fetch_official_water(sid)
                 if result:
                     INTELLIGENCE_CENTER["water"][sid] = result
-                    print(f"✅ [ Rain ] {sid} Synced: {result['rain_24h']}mm")
+                    print(f"✅ [ Rain ] {sid} Synced: 24h={result['rain_24h']}mm, 72h={result['rain_72h']}mm")
                 else:
-                    # Fallback to simulation
-                    INTELLIGENCE_CENTER["water"][sid] = {
-                        "station_id": sid,
-                        "station_name": "坪林橋" if sid == "pinglin" else "福山橋",
-                        "current_level_m": round(random.uniform(105.0, 107.0), 2),
-                        "warning_level_m": 107.5 if sid == "pinglin" else 122.0,
-                        "rain_accumulated_1h_mm": 0.0,
-                        "rain_accumulated_24h_mm": round(random.uniform(0.0, 15.0), 1),
-                        "status": "安全水位 🟢 (戰略評估)",
-                        "turbidity_status": "溪水清澈 🟢",
-                        "last_update": time.strftime("%H:%M")
-                    }
+                    print(f"⚠️ [ Rain ] {sid} Sync failed.")
             
             INTELLIGENCE_CENTER["last_sync"] = time.strftime("%Y-%m-%d %H:%M:%S")
             print(f"✨ [ Intelligence Center ] Global Sync Complete at {INTELLIGENCE_CENTER['last_sync']}")

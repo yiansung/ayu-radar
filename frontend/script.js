@@ -147,15 +147,15 @@ function renderStrategicForecast(liveWeather) {
     const container = document.getElementById('weather-warning-container');
     if (!container) return;
     
-    const desc = liveWeather.weather_desc || '';
-    let rainProb = desc.includes('雨') ? 85 : 20;
-    let advice = rainProb > 30 ? "⚠️ 明日預期降雨，溪水恐起水，建議縮短作釣時間。" : "✅ 氣候穩定，預期未來 48h 水位持平，適合長征作釣。";
+    // 移除舊版寫死的降雨率，改用後端實時同步的預報數據
+    const rainProb = liveWeather.pop_48h !== undefined ? liveWeather.pop_48h : '--';
+    const advice = liveWeather.tactical_advice || "✅ 目前情報鏈路穩定，正在評估未來 48h 戰術...";
     
     const adviceHtml = `
         <div style="margin-bottom: 10px; padding: 10px; background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 8px; font-size: 0.8rem;">
             <div style="color: #38bdf8; font-weight: bold; margin-bottom: 5px;">📡 48H 戰術評估</div>
-            <div style="color: #e2e8f0;">${advice}</div>
-            <div style="margin-top: 5px; color: #94a3b8;">預期降雨率: ${rainProb}%</div>
+            <div style="color: #e2e8f0; line-height: 1.4;">${advice}</div>
+            <div style="margin-top: 8px; color: #94a3b8; font-weight: bold;">預期最高降雨機率: <span style="color: #38bdf8;">${rainProb}%</span></div>
         </div>
     `;
     container.innerHTML = adviceHtml + container.innerHTML;

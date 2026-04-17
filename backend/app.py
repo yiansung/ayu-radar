@@ -308,6 +308,52 @@ def fetch_official_weather(cwa_sid):
         print(f"Background Weather Sync Error ({cwa_sid}): {e}")
     return None
 
+def fetch_official_forecast(basis_name):
+    """
+    獲取鄉鎮預報 (F-D0047-071: 新北市) 中的坪林區/烏來區降雨機率與氣象趨勢
+    """
+    try:
+        url = f"https://opendata.cwa.gov.tw/api/v1/rest/datastore/F-D0047-071?Authorization={CWA_TOKEN}&format=JSON"
+        resp = requests.get(url, timeout=10, verify=False)
+        data = resp.json()
+        
+        target_town = "坪林區" if basis_name == 'pinglin' else "烏來區"
+        locations = data.get('records', {}).get('locations', [{}])[0].get('location', [])
+        
+        town_data = next((loc for loc in locations if loc['locationName'] == target_town), None)
+        if not town_data: return None
+        
+        pop_list = []
+        wx_list = []
+        
+        for elem in town_data.get('weatherElement', []):
+            if elem['elementName'] == 'PoP12h':
+                # 取未來 48 小時 (前 4 個 12h 區間)
+                pop_list = [int(t['elementValue'][0]['value']) for t in elem['time'][:4] if t['elementValue'][0]['value'] != ' ']
+            if elem['elementName'] == 'Wx':
+                wx_list = [t['elementValue'][0]['value'] for t in elem['time'][:4]]
+        
+        if not pop_list: return None
+        
+        max_pop = max(pop_list)
+        summary_wx = "/".join(list(set(wx_list)))
+        
+        # 戰術生成邏輯
+        advice = "✅ 48H 內部氣象穩定，預期水位持平且清澈，非常適合長征作釣。"
+        if max_pop >= 70 or '雷' in summary_wx or '大雨' in summary_wx:
+            advice = "⚠️ 預期有強降雨/雷雨風險，溪水可能迅速暴漲，建議暫緩出軍或隨時準備撤離計畫。"
+        elif max_pop >= 40 or '雨' in summary_wx:
+            advice = "⚠️ 天氣不穩定，降雨機率增加，溪水可能起色，建議縮短作釣時間並觀察水面。"
+            
+        return {
+            "pop_48h": max_pop,
+            "tactical_advice": advice,
+            "wx_summary": summary_wx
+        }
+    except Exception as e:
+        print(f"Forecast Sync Error ({basis_name}): {e}")
+    return None
+
 def fetch_official_traffic(basin_id):
     """內部函數：實際對接高公局公路路況 JSON 並聯動省道估算"""
     try:
@@ -405,8 +451,13 @@ def background_intelligence_poller():
                 print(f"📡 [ Weather ] Syncing {sid} ({cwa_id})...")
                 result = fetch_official_weather(cwa_id)
                 if result:
+                    # 同步獲取 48h 預報與戰術評估
+                    forecast = fetch_official_forecast(sid)
+                    if forecast:
+                        result.update(forecast)
+                    
                     INTELLIGENCE_CENTER["weather"][sid] = result
-                    print(f"✅ [ Weather ] {sid} Synced: {result['current_temp']}°C")
+                    print(f"✅ [ Weather ] {sid} Synced: {result['current_temp']}°C (Tactical: {result.get('pop_48h','--')}%)")
                 else:
                     print(f"⚠️ [ Weather ] {sid} Sync failed, using previous data.")
             

@@ -240,6 +240,14 @@ def check_dns(hostname="opendata.cwa.gov.tw"):
     except Exception as e:
         return f"FAILED: {e}"
 
+def check_external_https(url="https://www.google.com"):
+    """診斷用：確認伺服器是否能對外進行 HTTPS 連線"""
+    try:
+        resp = requests.get(url, timeout=3)
+        return f"OK (Status: {resp.status_code})"
+    except Exception as e:
+        return f"FAILED: {e}"
+
 INTELLIGENCE_CENTER = {
     "weather": {
         "pinglin": {
@@ -298,10 +306,18 @@ def fetch_official_weather(cwa_sid):
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
         }
         
-        # 採用連線與讀取的雙重超時機制，防止無限期懸掛
-        resp = requests.get(url, headers=headers, timeout=(3, 7)) 
-        POLLER_CHECKPOINT = f"Weather {cwa_sid}: Parsing..."
-        data = resp.json()
+        # 優先嘗試 HTTPS，若失敗則回報
+        try:
+            resp = requests.get(url, headers=headers, timeout=(3, 7)) 
+            POLLER_CHECKPOINT = f"Weather {cwa_sid}: Parsing..."
+            data = resp.json()
+        except Exception as conn_err:
+            POLLER_CHECKPOINT = f"Weather {cwa_sid}: HTTPS Failed, trying fallback..."
+            # 如果 HTTPS 失敗，嘗試最原始的 urllib 方式
+            import urllib.request
+            req = urllib.request.Request(url, headers=headers)
+            with urllib.request.urlopen(req, timeout=5) as u_resp:
+                data = json.loads(u_resp.read().decode('utf-8'))
         if data.get('success') == 'true' and data['records']['Station']:
             obs = data['records']['Station'][0]
             we = obs.get('WeatherElement', {})
@@ -571,6 +587,7 @@ def system_status():
         "token_detected": CWA_TOKEN is not None and len(CWA_TOKEN) > 0,
         "token_preview": masked_token,
         "dns_status": check_dns(),
+        "external_https": check_external_https(),
         "checkpoint": POLLER_CHECKPOINT,
         "last_error": LAST_POLLER_ERROR,
         "server_time": time.strftime("%Y-%m-%d %H:%M:%S"),

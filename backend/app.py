@@ -1063,5 +1063,10 @@ with app.app_context():
         threading.Thread(target=background_intelligence_poller, daemon=True).start()
         _poller_started = True
 
+@app.route('/health')
+def health_check_root():
+    return system_status()
+
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5001, debug=False, threaded=True)
+    port = int(os.environ.get("PORT", 5001))
+    app.run(host='0.0.0.0', port=port, debug=False, threaded=True)

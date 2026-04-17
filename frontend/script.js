@@ -604,3 +604,77 @@ document.addEventListener('DOMContentLoaded', () => {
     fetchAndRenderBasin();
     setInterval(fetchAndRenderBasin, 120000); // 2分鐘輪詢一次
 });
+
+// --- Ayu Mentor Chat Logic ---
+let mentorChatHistory = [];
+
+window.openMentorChat = function() {
+    const modal = document.getElementById('mentor-modal');
+    if (modal) modal.style.display = 'flex';
+    document.getElementById('mentor-input')?.focus();
+};
+
+window.closeMentorChat = function(e) {
+    const modal = document.getElementById('mentor-modal');
+    if (modal) modal.style.display = 'none';
+};
+
+window.sendMentorMessage = async function() {
+    const input = document.getElementById('mentor-input');
+    const msgContainer = document.getElementById('mentor-messages');
+    const typingIndicator = document.getElementById('mentor-typing');
+    
+    const text = input.value.trim();
+    if (!text) return;
+
+    // 1. Add User Message to UI
+    appendMessage('user', text);
+    input.value = '';
+
+    // 2. Show Typing
+    if (typingIndicator) typingIndicator.style.display = 'block';
+    msgContainer.scrollTop = msgContainer.scrollHeight;
+
+    try {
+        const res = await fetch(`${API_BASE}/mentor/chat`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                message: text,
+                history: mentorChatHistory
+            })
+        });
+        const data = await res.json();
+        
+        // 3. Add AI Reply to UI
+        if (typingIndicator) typingIndicator.style.display = 'none';
+        
+        if (data.reply) {
+            appendMessage('ai', data.reply);
+            // 4. Update History
+            mentorChatHistory.push({ role: 'user', content: text });
+            mentorChatHistory.push({ role: 'model', content: data.reply });
+            
+            // Keep history lean (last 10 rounds)
+            if (mentorChatHistory.length > 20) {
+                mentorChatHistory = mentorChatHistory.slice(-20);
+            }
+        }
+    } catch (err) {
+        if (typingIndicator) typingIndicator.style.display = 'none';
+        appendMessage('ai', "😵 導師連線中斷，請稍後再試。");
+        console.error(err);
+    }
+};
+
+function appendMessage(role, text) {
+    const container = document.getElementById('mentor-messages');
+    if (!container) return;
+    
+    const div = document.createElement('div');
+    div.className = `message ${role}`;
+    // 使用 marked 或簡單換行處理
+    div.innerText = text; 
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+}

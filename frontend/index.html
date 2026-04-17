@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>追星雷達 | 友釣香魚實時戰情網</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="mentor-chat.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Noto+Sans+TC:wght@300;400;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -20,6 +21,16 @@
                 <div class="sunline-subtitle-top">PROFESSIONAL AYU FISHING TACTICAL NETWORK</div>
                 <h1 class="sunline-title">追星雷達</h1>
                 <div class="sunline-subtitle-bottom">友釣戰情室 <span style="font-size: 1.2rem; letter-spacing: 1px;">| AYU STAR RADAR</span></div>
+            </div>
+
+            <!-- Ayu Mentor Hero Trigger -->
+            <div class="mentor-trigger-area" onclick="window.openMentorChat()">
+                <div style="font-size: 1.5rem; margin-bottom: 5px;">🤖</div>
+                <div style="font-weight: 800; color: #38bdf8; font-size: 1.1rem; letter-spacing: 1px;">AI 香魚導師</div>
+                <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 4px;">由日系戰術與即時水情驅動的智慧助理</div>
+                <div style="margin-top: 10px; background: rgba(56, 189, 248, 0.2); color: #7dd3fc; font-size: 0.7rem; padding: 4px 10px; border-radius: 20px; display: inline-block; border: 1px solid rgba(56, 189, 248, 0.4);">
+                    立即向導師諮詢今日戰略 ➔
+                </div>
             </div>
         </header>
 
@@ -193,6 +204,30 @@
         <img id="lightbox-img" src="" style="max-width: 90%; max-height: 85vh; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); object-fit: contain;">
         
         <button class="lightbox-btn" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.5); border: none; color: white; font-size: 2rem; padding: 10px 15px; cursor: pointer; border-radius: 5px; z-index: 3010;" onclick="window.nextLightboxImage(event, 1)">❯</button>
+    </div>
+
+    <!-- Ayu Mentor Chat Modal -->
+    <div id="mentor-modal" class="mentor-chat-modal" onclick="window.closeMentorChat(event)">
+        <div class="mentor-chat-window" onclick="event.stopPropagation()">
+            <div class="mentor-header">
+                <div class="mentor-avatar">🐟</div>
+                <div class="mentor-info" style="flex: 1;">
+                    <h4>香魚導師 Ayu Mentor</h4>
+                    <p>● 線上中 - 精通日系戰術與在地水情</p>
+                </div>
+                <span style="cursor: pointer; font-size: 1.5rem; color: #64748b;" onclick="window.closeMentorChat(event)">&times;</span>
+            </div>
+            <div id="mentor-messages" class="chat-messages">
+                <div class="message ai">
+                    釣友您好！我是您的專屬香魚導師。不論是想詢問今日**坪林或烏來**的戰術評估，或是想精進**友釣線結與仕掛**知識，我都隨時準備為您解答。
+                </div>
+            </div>
+            <div id="mentor-typing" class="typing-indicator">導師正在思考戰術中...</div>
+            <div class="chat-input-area">
+                <input type="text" id="mentor-input" placeholder="請輸入您的問題..." onkeypress="if(event.key==='Enter') window.sendMentorMessage()">
+                <button class="send-btn" onclick="window.sendMentorMessage()">送出</button>
+            </div>
+        </div>
     </div>
 
 

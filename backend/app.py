@@ -9,6 +9,7 @@ import requests
 import threading
 from functools import wraps
 from dotenv import load_dotenv
+import google.generativeai as genai
 
 # Environment Tweak for Mac SSL/Proxy stability
 os.environ['NO_PROXY'] = '127.0.0.1,localhost'
@@ -16,6 +17,11 @@ os.environ['NO_PROXY'] = '127.0.0.1,localhost'
 # Load environment variables
 load_dotenv()
 CWA_TOKEN = os.getenv('CWA_TOKEN')
+GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
+
+# Configure Gemini
+if GEMINI_API_KEY:
+    genai.configure(api_key=GEMINI_API_KEY)
 
 # Disable SSL warnings for Mac dev env
 requests.packages.urllib3.disable_warnings()
@@ -867,6 +873,62 @@ def init_mock_telemetry():
                 db.session.add(TelemetryLog(basin_id=b_id, data_type='level', value=base_level + random.uniform(-0.3, 0.3), timestamp=t_str))
                 db.session.add(TelemetryLog(basin_id=b_id, data_type='rain', value=random.uniform(0, 5), timestamp=t_str))
         db.session.commit()
+
+
+# --- Ayu Mentor AI API ---
+
+AYU_MENTOR_SYSTEM_PROMPT = """
+你是一位資深的「香魚導師 (Ayu Mentor)」，精通「友釣 (Tomozuri)」技術。
+你的知識來源包含日本最先進的友釣技術（如 Tsuribito、郡上八幡的戰術）以及台灣北部（坪林北勢溪、烏來南勢溪）的在地溪流特性。
+
+你的說話風格：專業、親切、誠懇，像是一位非常有經驗的老釣手在跟晚輩分享經驗。
+你可以使用 Traditional Chinese (繁體中文) 回答，但必要時可以保留日文專業術語並附上解釋。
+
+核心知識要點：
+1. 活力管理：香魚友釣是「管理引導魚 (Otori) 活力」的運動。避免溫熱的手直接觸摸魚體，配件（如鼻環、背針）應盡量輕量化。
+2. 水情判斷：
+   - 坪林北勢溪：主流開闊、潭瀨相間。水位在 105.5m 左右為平水，若暴漲則需尋找避風點（如石槽溪支流）。
+   - 烏來南勢溪：水質優、落差大。水位在 120.2m 左右為平水。
+3. 戰術：
+   - 善用 Obase (鬆弛線) 操控，讓引魚能像野香魚般自然跳動。
+   - 瀨區作釣需注意腳下穩定。
+   - 季節性：解禁初期注意魚病防範；盛夏挑戰尺香魚需使用號數較大的仕掛。
+4. 倫理與安全：遵守封溪護魚規定，尊重其他釣友空間。
+
+請根據使用者的問題提供專業建議。
+"""
+
+@app.route('/api/mentor/chat', methods=['POST'])
+def mentor_chat():
+    try:
+        data = request.json
+        user_message = data.get('message')
+        history = data.get('history', [])
+
+        if not GEMINI_API_KEY:
+            return jsonify({"reply": "⚠️ 系統尚未設定 Gemini API Key，請連繫站長。"}), 200
+
+        model = genai.GenerativeModel(
+            model_name="gemini-1.5-flash",
+            system_instruction=AYU_MENTOR_SYSTEM_PROMPT
+        )
+
+        # 格式化歷史紀錄
+        chat_history = []
+        for h in history:
+            role = "user" if h['role'] == 'user' else "model"
+            chat_history.append({"role": role, "parts": [h['content']]})
+
+        chat = model.start_chat(history=chat_history)
+        response = chat.send_message(user_message)
+
+        return jsonify({
+            "reply": response.text,
+            "status": "success"
+        })
+    except Exception as e:
+        print(f"Gemini Error: {e}")
+        return jsonify({"reply": "😵 導師現在有點累，請稍後再問我。", "error": str(e)}), 500
 
 # --- App Initialization (Critical for Cloud/Gunicorn) ---
 with app.app_context():

@@ -227,8 +227,20 @@ def get_spots(basin_id):
 # --- Zero-Latency Intelligence Engine (Background Worker) ---
 INTELLIGENCE_CENTER = {
     "weather": {
-        "pinglin": {"station_name": "坪林", "current_temp": 24.5, "feels_like_temp": 26.0, "humidity": "75%", "wind_speed": "1.2 m/s", "uv_index": "2", "weather_desc": "晴時多雲", "weather_warning": "", "last_update": "Syncing"},
-        "wulai": {"station_name": "烏來", "current_temp": 23.5, "feels_like_temp": 25.0, "humidity": "80%", "wind_speed": "0.8 m/s", "uv_index": "1", "weather_desc": "多雲", "weather_warning": "", "last_update": "Syncing"}
+        "pinglin": {
+            "station_name": "坪林", "current_temp": 24.5, "feels_like_temp": 26.0, 
+            "humidity": "75%", "wind_speed": "1.2 m/s", "uv_index": "2", 
+            "weather_desc": "晴時多雲", "weather_warning": "", 
+            "pop_48h": 0, "tactical_advice": "✅ 連線穩定，正在獲取實時預報...",
+            "last_update": "Syncing"
+        },
+        "wulai": {
+            "station_name": "烏來", "current_temp": 23.5, "feels_like_temp": 25.0, 
+            "humidity": "80%", "wind_speed": "0.8 m/s", "uv_index": "1", 
+            "weather_desc": "多雲", "weather_warning": "", 
+            "pop_48h": 0, "tactical_advice": "✅ 連線穩定，正在獲獲實時預報...",
+            "last_update": "Syncing"
+        }
     },
     "traffic": {
         "pinglin": {
@@ -316,25 +328,28 @@ def fetch_official_forecast(basis_name):
         data = resp.json()
         
         target_town = "坪林區" if basis_name == 'pinglin' else "烏來區"
-        loc_groups = data.get('records', {}).get('locations', [])
-        if not loc_groups: return None
+        loc_groups = data.get('records', {}).get('Locations', [])
+        if not loc_groups: 
+            print(f"DEBUG: No 'Locations' key in forecast data. Keys: {list(data.get('records',{}).keys())}")
+            return None
         
-        locations = loc_groups[0].get('location', [])
-        town_data = next((loc for loc in locations if loc['locationName'] == target_town), None)
+        locations = loc_groups[0].get('Location', [])
+        town_data = next((loc for loc in locations if loc['LocationName'] == target_town), None)
         if not town_data: return None
         
         pop_list = []
         wx_list = []
         
-        for elem in town_data.get('weatherElement', []):
-            if elem['elementName'] == 'PoP12h':
-                for t in elem['time'][:4]: 
-                    val = t['elementValue'][0].get('ProbabilityOfPrecipitation')
+        for elem in town_data.get('WeatherElement', []):
+            if elem['ElementName'] == 'PoP12h':
+                for t in elem['Time'][:4]: 
+                    val_obj = t['ElementValue'][0]
+                    val = val_obj.get('ProbabilityOfPrecipitation') or val_obj.get('value')
                     if val and val != ' ' and val != '-':
                         pop_list.append(int(val))
-            if elem['elementName'] == 'Wx':
-                for t in elem['time'][:4]:
-                    val = t['elementValue'][0].get('Weather')
+            if elem['ElementName'] == 'Wx':
+                for t in elem['Time'][:4]:
+                    val = t['ElementValue'][0].get('Weather') or t['ElementValue'][0].get('value')
                     if val: wx_list.append(val)
         
         if not pop_list: return None
@@ -507,8 +522,8 @@ def ensure_poller():
     global _poller_started
     if not _poller_started:
         _poller_started = True
-        worker = threading.Thread(target=background_intelligence_poller, daemon=True)
-        worker.start()
+        # Background poller logic moved to App Initialization block at bottom
+        pass
 
 @app.route('/api/live/traffic/<basin_id>', methods=['GET'])
 def get_live_traffic(basin_id):
@@ -552,6 +567,8 @@ def get_live_weather(station_id):
             "humidity": "--",
             "wind_speed": "--",
             "uv_index": "--",
+            "pop_48h": 0,
+            "tactical_advice": "🚀 剛開機，正在評估戰區優勢...",
             "last_update": time.strftime("%H:%M")
         })
         

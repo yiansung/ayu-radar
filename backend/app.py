@@ -225,6 +225,13 @@ def get_spots(basin_id):
         return jsonify({"error": str(e)}), 500
 
 # --- Zero-Latency Intelligence Engine (Background Worker) ---
+LAST_POLLER_ERROR = "None"
+CWA_TOKEN = os.getenv('CWA_TOKEN')
+if not CWA_TOKEN:
+    print("⚠️ [ WARNING ] CWA_TOKEN is not set! Weather data will not sync.")
+else:
+    print(f"📡 [ INFO ] CWA_TOKEN detected: {CWA_TOKEN[:6]}...{CWA_TOKEN[-4:]}")
+
 INTELLIGENCE_CENTER = {
     "weather": {
         "pinglin": {
@@ -497,9 +504,12 @@ def background_intelligence_poller():
                     print(f"⚠️ [ Rain ] {sid} Sync failed.")
             
             INTELLIGENCE_CENTER["last_sync"] = time.strftime("%Y-%m-%d %H:%M:%S")
+            global LAST_POLLER_ERROR
+            LAST_POLLER_ERROR = "None"
             print(f"✨ [ Intelligence Center ] Global Sync Complete at {INTELLIGENCE_CENTER['last_sync']}")
             
         except Exception as e:
+            LAST_POLLER_ERROR = str(e)
             print(f"❌ [ Poller Critical ] Error: {e}")
             
             
@@ -507,6 +517,17 @@ def background_intelligence_poller():
 
 # --- Zero-Latency Intelligence Engine (Background Worker) ---
 _poller_started = False
+
+@app.route('/api/system/status', methods=['GET'])
+def system_status():
+    """診斷專用接口：查看後端同步狀態"""
+    return jsonify({
+        "last_sync": INTELLIGENCE_CENTER.get("last_sync", "Never"),
+        "poller_running": _poller_started,
+        "token_detected": CWA_TOKEN is not None,
+        "last_error": LAST_POLLER_ERROR,
+        "server_time": time.strftime("%Y-%m-%d %H:%M:%S")
+    })
 
 @app.before_request
 def ensure_poller():

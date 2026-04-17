@@ -175,6 +175,17 @@ def ping_cwa():
     except Exception as e:
         return jsonify({"error": str(e), "trace": traceback.format_exc()})
 
+@app.route('/api/debug/test_forecast')
+def debug_test_forecast():
+    try:
+        results = {}
+        for sid in ['pinglin', 'wulai']:
+            res = fetch_official_forecast(sid)
+            results[sid] = res
+        return jsonify(results)
+    except Exception as e:
+        return jsonify({"error": str(e)})
+
 # --- API Endpoints ---
 @app.route('/api/basins', methods=['GET'])
 def get_basins():

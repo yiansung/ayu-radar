@@ -908,26 +908,35 @@ def mentor_chat():
         if not GEMINI_API_KEY:
             return jsonify({"reply": "⚠️ 系統尚未設定 Gemini API Key，請連繫站長。"}), 200
 
-        # 診斷：嘗試列出可用模型 (供後台 Log 查看)
-        available_models = []
-        try:
-            available_models = [m.name for m in genai.list_models()]
-            print(f"Available models: {available_models}")
-        except:
-            pass
+        # 每一次呼叫都重新 Configure 確保 Key 生效
+        genai.configure(api_key=GEMINI_API_KEY)
 
-        # 優先選擇 flash，若不行則嘗試最通用的 gemini-pro
+        # 診斷：強制抓取可用清單
+        try:
+            available = [m.name for m in genai.list_models()]
+            print(f"DEBUG: Found models {available}")
+        except Exception as list_err:
+            return jsonify({"reply": f"❌ 無法讀取型號清單，可能是 API Key 權限不足或未啟用 API。({str(list_err)[:50]})"}), 500
+
+        # 決定型號
+        # 1. 優先選 1.5-flash
+        # 2. 次選 1.0-pro (穩定版)
+        # 3. 都不行就選清單裡第一個支援 generateContent 的
         selected_model = "gemini-1.5-flash"
-        if available_models and "models/gemini-1.5-flash" not in available_models:
-             if "models/gemini-pro" in available_models:
-                 selected_model = "gemini-pro"
+        if "models/gemini-1.5-flash" not in available:
+            if "models/gemini-pro" in available:
+                selected_model = "gemini-pro"
+            elif available:
+                # 抓取第一個可用的型號
+                selected_model = available[0].replace("models/", "")
+            else:
+                return jsonify({"reply": "🚫 您的 API Key 目前不支援任何生成型號，請檢查 Google AI Studio 設定。"}), 500
 
         model = genai.GenerativeModel(
             model_name=selected_model,
             system_instruction=AYU_MENTOR_SYSTEM_PROMPT
         )
 
-        # 格式化歷史紀錄
         chat_history = []
         for h in history:
             role = "user" if h['role'] == 'user' else "model"
@@ -938,17 +947,13 @@ def mentor_chat():
 
         return jsonify({
             "reply": response.text,
-            "status": "success"
+            "status": "success",
+            "model_used": selected_model
         })
     except Exception as e:
         error_msg = str(e)
         print(f"Gemini Error: {error_msg}")
-        # 如果是安全過濾器攔截或者是 API Key 有誤，回傳更具體的提示
-        if "API_KEY_INVALID" in error_msg:
-            return jsonify({"reply": "🔑 API Key 似乎無效，請檢查 Render 的環境變數設定。"}), 500
-        if "quota" in error_msg.lower():
-            return jsonify({"reply": "⏳ 導師今天回話太多次累了 (達到免費版限額)，請稍後再試。"}), 500
-        return jsonify({"reply": f"😵 導師現在有點累，請稍後再問我。(錯誤代碼: {error_msg[:50]})"}), 500
+        return jsonify({"reply": f"😵 導師現在有點累，請稍後再問我。(錯誤代碼: {error_msg[:100]})", "available": available if 'available' in locals() else []}), 500
 
 # --- App Initialization (Critical for Cloud/Gunicorn) ---
 with app.app_context():

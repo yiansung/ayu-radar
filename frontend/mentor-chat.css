@@ -155,10 +155,25 @@
 }
 
 .typing-indicator {
-    padding: 10px;
-    font-size: 0.8rem;
+    padding: 15px 20px;
+    font-size: 0.9rem;
     color: #38bdf8;
+    font-weight: bold;
     display: none;
+    animation: typing-fade 1.5s infinite;
+}
+
+@keyframes typing-fade {
+    0%, 100% { opacity: 1; transform: translateX(0); }
+    50% { opacity: 0.5; transform: translateX(5px); }
+}
+
+.mentor-desc {
+    font-size: 0.85rem;
+    color: #e2e8f0; /* Brighter color */
+    margin-top: 6px;
+    line-height: 1.4;
+    text-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
 }
 
 /* Scrollbar Style */

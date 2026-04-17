@@ -927,8 +927,14 @@ def mentor_chat():
             "status": "success"
         })
     except Exception as e:
-        print(f"Gemini Error: {e}")
-        return jsonify({"reply": "😵 導師現在有點累，請稍後再問我。", "error": str(e)}), 500
+        error_msg = str(e)
+        print(f"Gemini Error: {error_msg}")
+        # 如果是安全過濾器攔截或者是 API Key 有誤，回傳更具體的提示
+        if "API_KEY_INVALID" in error_msg:
+            return jsonify({"reply": "🔑 API Key 似乎無效，請檢查 Render 的環境變數設定。"}), 500
+        if "quota" in error_msg.lower():
+            return jsonify({"reply": "⏳ 導師今天回話太多次累了 (達到免費版限額)，請稍後再試。"}), 500
+        return jsonify({"reply": f"😵 導師現在有點累，請稍後再問我。(錯誤代碼: {error_msg[:50]})"}), 500
 
 # --- App Initialization (Critical for Cloud/Gunicorn) ---
 with app.app_context():

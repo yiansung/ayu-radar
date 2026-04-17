@@ -14,10 +14,9 @@ import google.generativeai as genai
 # Environment Tweak for Mac SSL/Proxy stability
 os.environ['NO_PROXY'] = '127.0.0.1,localhost'
 
-# Load environment variables
 load_dotenv()
-CWA_TOKEN = os.getenv('CWA_TOKEN')
-GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
+CWA_TOKEN = os.getenv('CWA_TOKEN', '').strip()
+GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', '').strip()
 
 # Configure Gemini
 if GEMINI_API_KEY:
@@ -286,8 +285,13 @@ def fetch_official_weather(cwa_sid):
         global POLLER_CHECKPOINT
         POLLER_CHECKPOINT = f"Weather {cwa_sid}: Connecting..."
         url = f"https://opendata.cwa.gov.tw/api/v1/rest/datastore/O-A0003-001?Authorization={CWA_TOKEN}&format=JSON&StationId={cwa_sid}"
+        
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
+        
         # 採用連線與讀取的雙重超時機制，防止無限期懸掛
-        resp = requests.get(url, timeout=(3, 7)) 
+        resp = requests.get(url, headers=headers, timeout=(3, 7)) 
         POLLER_CHECKPOINT = f"Weather {cwa_sid}: Parsing..."
         data = resp.json()
         if data.get('success') == 'true' and data['records']['Station']:
@@ -338,7 +342,10 @@ def fetch_official_forecast(basis_name):
         global POLLER_CHECKPOINT
         POLLER_CHECKPOINT = f"Forecast {basis_name}: Connecting..."
         url = f"https://opendata.cwa.gov.tw/api/v1/rest/datastore/F-D0047-071?Authorization={CWA_TOKEN}&format=JSON"
-        resp = requests.get(url, timeout=(3, 10)) 
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
+        resp = requests.get(url, headers=headers, timeout=(3, 10)) 
         POLLER_CHECKPOINT = f"Forecast {basis_name}: Parsing..."
         data = resp.json()
         
@@ -395,7 +402,10 @@ def fetch_official_traffic(basin_id):
         url = "https://tisvcloud.freeway.gov.tw/data/roadlevel_freeway.json"
         
         target_highway = "0005" if basin_id == 'pinglin' else "0003"
-        resp = requests.get(url, timeout=10, verify=False)
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
+        resp = requests.get(url, headers=headers, timeout=(3, 10))
         data = resp.json()
         
         speeds = []
@@ -451,7 +461,10 @@ def fetch_official_water(station_id):
         try:
             global POLLER_CHECKPOINT
             POLLER_CHECKPOINT = f"Rain {cwa_rain_id}: Connecting..."
-            resp_r = requests.get(url_rain, timeout=(3, 7))
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+            }
+            resp_r = requests.get(url_rain, headers=headers, timeout=(3, 7))
             POLLER_CHECKPOINT = f"Rain {cwa_rain_id}: Parsing..."
             data_r = resp_r.json()
             if data_r.get('success') == 'true' and data_r['records']['Station']:
@@ -539,10 +552,16 @@ _poller_started = False
 @app.route('/api/system/status', methods=['GET'])
 def system_status():
     """診斷專用接口：查看後端同步狀態"""
+    # 遮蔽 Token 供比對
+    masked_token = "Not Set"
+    if CWA_TOKEN:
+        masked_token = f"{CWA_TOKEN[:6]}...{CWA_TOKEN[-4:]}" if len(CWA_TOKEN) > 10 else "Invalid Length"
+
     return jsonify({
         "last_sync": INTELLIGENCE_CENTER.get("last_sync", "Never"),
         "poller_running": _poller_started,
         "token_detected": CWA_TOKEN is not None and len(CWA_TOKEN) > 0,
+        "token_preview": masked_token,
         "checkpoint": POLLER_CHECKPOINT,
         "last_error": LAST_POLLER_ERROR,
         "server_time": time.strftime("%Y-%m-%d %H:%M:%S"),

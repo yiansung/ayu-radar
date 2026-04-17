@@ -591,7 +591,8 @@ def system_status():
         "checkpoint": POLLER_CHECKPOINT,
         "last_error": LAST_POLLER_ERROR,
         "server_time": time.strftime("%Y-%m-%d %H:%M:%S"),
-        "version": "v1.3-tactical-dns"
+        "pid": os.getpid(),
+        "version": "v1.4-unified"
     })
 
 @app.before_request

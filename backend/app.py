@@ -912,6 +912,9 @@ def mentor_chat():
             model_name="gemini-1.5-flash",
             system_instruction=AYU_MENTOR_SYSTEM_PROMPT
         )
+        
+        # 診斷用：如果出錯前可以先列出可用模型 (僅在開發/報錯時建議開啟)
+        # print("Available models:", [m.name for m in genai.list_models()])
 
         # 格式化歷史紀錄
         chat_history = []

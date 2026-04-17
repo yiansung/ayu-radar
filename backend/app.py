@@ -948,8 +948,6 @@ def init_mock_telemetry():
 
 # --- Ayu Master AI API ---
 
-# --- Ayu Master AI API ---
-
 AY_MASTER_SYSTEM_PROMPT = """
 你是一位資深的「香魚大師 (Ayu Master)」，精通「友釣 (Tomozuri)」技術。
 你的知識來源包含日本最先進的友釣技術（如 Tsuribito、郡上八幡的戰術）以及台灣北部（坪林北勢溪、烏來南勢溪）的在地溪流特性。
@@ -971,8 +969,8 @@ AY_MASTER_SYSTEM_PROMPT = """
 請根據使用者的問題提供專業建議。
 """
 
-@app.route('/api/mentor/chat', methods=['POST'])
-def mentor_chat():
+@app.route('/api/master/chat', methods=['POST'])
+def master_chat():
     try:
         data = request.json
         user_message = data.get('message')

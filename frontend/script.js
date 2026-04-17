@@ -623,7 +623,7 @@ window.sendMasterMessage = async function() {
     msgContainer.scrollTop = msgContainer.scrollHeight;
 
     try {
-        const res = await fetch(`${API_BASE}/mentor/chat`, {
+        const res = await fetch(`${API_BASE}/master/chat`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({

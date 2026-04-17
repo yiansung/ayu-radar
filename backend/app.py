@@ -306,9 +306,9 @@ def fetch_official_weather(cwa_sid):
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
         }
         
-        # 優先嘗試 HTTPS，若失敗則回報
+        # 暴力繞過 SSL 驗證與握手，確保數據優先
         try:
-            resp = requests.get(url, headers=headers, timeout=(3, 7)) 
+            resp = requests.get(url, headers=headers, timeout=(3, 7), verify=False) 
             POLLER_CHECKPOINT = f"Weather {cwa_sid}: Parsing..."
             data = resp.json()
         except Exception as conn_err:
@@ -369,7 +369,7 @@ def fetch_official_forecast(basis_name):
         headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
         }
-        resp = requests.get(url, headers=headers, timeout=(3, 10)) 
+        resp = requests.get(url, headers=headers, timeout=(3, 10), verify=False) 
         POLLER_CHECKPOINT = f"Forecast {basis_name}: Parsing..."
         data = resp.json()
         
@@ -429,7 +429,7 @@ def fetch_official_traffic(basin_id):
         headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
         }
-        resp = requests.get(url, headers=headers, timeout=(3, 10))
+        resp = requests.get(url, headers=headers, timeout=(3, 10), verify=False)
         data = resp.json()
         
         speeds = []
@@ -488,7 +488,7 @@ def fetch_official_water(station_id):
             headers = {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
             }
-            resp_r = requests.get(url_rain, headers=headers, timeout=(3, 7))
+            resp_r = requests.get(url_rain, headers=headers, timeout=(3, 7), verify=False)
             POLLER_CHECKPOINT = f"Rain {cwa_rain_id}: Parsing..."
             data_r = resp_r.json()
             if data_r.get('success') == 'true' and data_r['records']['Station']:

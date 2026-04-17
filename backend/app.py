@@ -283,8 +283,12 @@ INTELLIGENCE_CENTER = {
 def fetch_official_weather(cwa_sid):
     """內部函數：實際連線氣象局，解析全量氣象要素"""
     try:
+        global POLLER_CHECKPOINT
+        POLLER_CHECKPOINT = f"Weather {cwa_sid}: Connecting..."
         url = f"https://opendata.cwa.gov.tw/api/v1/rest/datastore/O-A0003-001?Authorization={CWA_TOKEN}&format=JSON&StationId={cwa_sid}"
-        resp = requests.get(url, timeout=5, verify=False)
+        # 採用連線與讀取的雙重超時機制，防止無限期懸掛
+        resp = requests.get(url, timeout=(3, 7)) 
+        POLLER_CHECKPOINT = f"Weather {cwa_sid}: Parsing..."
         data = resp.json()
         if data.get('success') == 'true' and data['records']['Station']:
             obs = data['records']['Station'][0]
@@ -331,8 +335,11 @@ def fetch_official_forecast(basis_name):
     獲取鄉鎮預報 (F-D0047-071: 新北市) 中的坪林區/烏來區降雨機率與氣象趨勢
     """
     try:
+        global POLLER_CHECKPOINT
+        POLLER_CHECKPOINT = f"Forecast {basis_name}: Connecting..."
         url = f"https://opendata.cwa.gov.tw/api/v1/rest/datastore/F-D0047-071?Authorization={CWA_TOKEN}&format=JSON"
-        resp = requests.get(url, timeout=10, verify=False)
+        resp = requests.get(url, timeout=(3, 10)) 
+        POLLER_CHECKPOINT = f"Forecast {basis_name}: Parsing..."
         data = resp.json()
         
         target_town = "坪林區" if basis_name == 'pinglin' else "烏來區"
@@ -442,7 +449,10 @@ def fetch_official_water(station_id):
         url_rain = f"https://opendata.cwa.gov.tw/api/v1/rest/datastore/O-A0002-001?Authorization={CWA_TOKEN}&format=JSON&StationId={cwa_rain_id}"
         
         try:
-            resp_r = requests.get(url_rain, timeout=5, verify=False)
+            global POLLER_CHECKPOINT
+            POLLER_CHECKPOINT = f"Rain {cwa_rain_id}: Connecting..."
+            resp_r = requests.get(url_rain, timeout=(3, 7))
+            POLLER_CHECKPOINT = f"Rain {cwa_rain_id}: Parsing..."
             data_r = resp_r.json()
             if data_r.get('success') == 'true' and data_r['records']['Station']:
                 re = data_r['records']['Station'][0].get('RainfallElement', {})

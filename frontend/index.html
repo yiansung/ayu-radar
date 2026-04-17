@@ -68,9 +68,11 @@
                         </div>
                     </div>
                     
-                    <div id="weather-warning-container"></div>
-                    
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; font-size: 0.9rem;">
+                        <div style="grid-column: span 2; background: rgba(56, 189, 248, 0.1); padding: 10px; border-radius: 8px; border: 1px solid rgba(56, 189, 248, 0.2); display: flex; justify-content: space-between; align-items: center;">
+                            <div style="color: #38bdf8; font-weight: bold;">🌧️ 48H 最高降雨機率</div>
+                            <div id="w-pop-48h" style="font-weight: 800; color: #38bdf8; font-size: 1.1rem;">- %</div>
+                        </div>
                         <div style="background: rgba(255,255,255,0.05); padding: 8px; border-radius: 8px;">
                             <div style="color: #94a3b8; font-size: 0.75rem;">體感溫度</div>
                             <div id="w-feels" style="font-weight: bold;">-</div>
@@ -88,6 +90,7 @@
                             <div id="w-uv" style="font-weight: bold;">-</div>
                         </div>
                     </div>
+                    <div id="weather-warning-container"></div>
                     <div style="text-align:center; font-size: 0.75rem; color:#64748b;" id="w-update"></div>
                 </div>
             </div>

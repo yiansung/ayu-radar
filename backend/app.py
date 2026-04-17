@@ -226,6 +226,7 @@ def get_spots(basin_id):
 
 # --- Zero-Latency Intelligence Engine (Background Worker) ---
 LAST_POLLER_ERROR = "None"
+POLLER_CHECKPOINT = "Initializing"
 CWA_TOKEN = os.getenv('CWA_TOKEN')
 if not CWA_TOKEN:
     print("⚠️ [ WARNING ] CWA_TOKEN is not set! Weather data will not sync.")
@@ -473,8 +474,12 @@ def background_intelligence_poller():
     
     while True:
         try:
+            global POLLER_CHECKPOINT
+            POLLER_CHECKPOINT = "Starting Sync Loop"
+            
             # 1. 更新氣象 (坪林, 福山)
             for sid, cwa_id in [("pinglin", "CAAD90"), ("wulai", "C2A560")]:
+                POLLER_CHECKPOINT = f"Syncing Weather for {sid}..."
                 print(f"📡 [ Weather ] Syncing {sid} ({cwa_id})...")
                 result = fetch_official_weather(cwa_id)
                 if result:
@@ -490,12 +495,14 @@ def background_intelligence_poller():
             
             # 2. 更新路況
             for bid in ["pinglin", "wulai"]:
+                POLLER_CHECKPOINT = f"Syncing Traffic for {bid}..."
                 result = fetch_official_traffic(bid)
                 if result:
                     INTELLIGENCE_CENTER["traffic"][bid] = result
             
             # 3. 更新累積雨量 (取代水位)
             for sid in ["pinglin", "wulai"]:
+                POLLER_CHECKPOINT = f"Syncing Rain for {sid}..."
                 result = fetch_official_water(sid)
                 if result:
                     INTELLIGENCE_CENTER["water"][sid] = result
@@ -503,6 +510,7 @@ def background_intelligence_poller():
                 else:
                     print(f"⚠️ [ Rain ] {sid} Sync failed.")
             
+            POLLER_CHECKPOINT = "Sync Complete"
             INTELLIGENCE_CENTER["last_sync"] = time.strftime("%Y-%m-%d %H:%M:%S")
             global LAST_POLLER_ERROR
             LAST_POLLER_ERROR = "None"
@@ -524,9 +532,11 @@ def system_status():
     return jsonify({
         "last_sync": INTELLIGENCE_CENTER.get("last_sync", "Never"),
         "poller_running": _poller_started,
-        "token_detected": CWA_TOKEN is not None,
+        "token_detected": CWA_TOKEN is not None and len(CWA_TOKEN) > 0,
+        "checkpoint": POLLER_CHECKPOINT,
         "last_error": LAST_POLLER_ERROR,
-        "server_time": time.strftime("%Y-%m-%d %H:%M:%S")
+        "server_time": time.strftime("%Y-%m-%d %H:%M:%S"),
+        "version": "v1.2-tactical"
     })
 
 @app.before_request

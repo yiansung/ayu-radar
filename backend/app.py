@@ -301,7 +301,7 @@ def fetch_official_weather(cwa_sid):
             
             # 簡單體感溫度計算
             feels_like = temp + (0.5 * (temp - 15)) if temp > 20 else temp
-            station_name = "坪林" if cwa_sid == "CAAD90" else ("烏來" if cwa_sid == "C2A560" else obs['StationName'])
+            station_name = "坪林" if cwa_sid == "CAAD90" else ("福山" if cwa_sid == "C2A560" else obs['StationName'])
             
             return {
                 "station_name": station_name,

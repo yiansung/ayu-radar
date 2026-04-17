@@ -300,14 +300,9 @@ def fetch_official_weather(cwa_sid):
             
             # 簡單體感溫度計算
             feels_like = temp + (0.5 * (temp - 15)) if temp > 20 else temp
-            
-            # 優化測站名稱顯示
             station_name = "坪林" if cwa_sid == "CAAD90" else ("烏來" if cwa_sid == "C2A560" else obs['StationName'])
             
             return {
-                "station_name": station_name,
-                "current_temp": temp,
-                "feels_like_temp": round(feels_like, 1),
                 "humidity": f"{int(humidity * 100)}%" if humidity < 1 else f"{humidity}%",
                 "wind_speed": f"{wind} m/s",
                 "uv_index": uv if uv != "-99" else "0",
@@ -329,8 +324,10 @@ def fetch_official_forecast(basis_name):
         data = resp.json()
         
         target_town = "坪林區" if basis_name == 'pinglin' else "烏來區"
-        locations = data.get('records', {}).get('locations', [{}])[0].get('location', [])
+        loc_groups = data.get('records', {}).get('locations', [])
+        if not loc_groups: return None
         
+        locations = loc_groups[0].get('location', [])
         town_data = next((loc for loc in locations if loc['locationName'] == target_town), None)
         if not town_data: return None
         
@@ -339,17 +336,20 @@ def fetch_official_forecast(basis_name):
         
         for elem in town_data.get('weatherElement', []):
             if elem['elementName'] == 'PoP12h':
-                # 取未來 48 小時 (前 4 個 12h 區間)
-                pop_list = [int(t['elementValue'][0]['value']) for t in elem['time'][:4] if t['elementValue'][0]['value'] != ' ']
+                for t in elem['time'][:4]: 
+                    val = t['elementValue'][0].get('ProbabilityOfPrecipitation')
+                    if val and val != ' ' and val != '-':
+                        pop_list.append(int(val))
             if elem['elementName'] == 'Wx':
-                wx_list = [t['elementValue'][0]['value'] for t in elem['time'][:4]]
+                for t in elem['time'][:4]:
+                    val = t['elementValue'][0].get('Weather')
+                    if val: wx_list.append(val)
         
         if not pop_list: return None
         
         max_pop = max(pop_list)
         summary_wx = "/".join(list(set(wx_list)))
         
-        # 戰術生成邏輯
         advice = "✅ 48H 內部氣象穩定，預期水位持平且清澈，非常適合長征作釣。"
         if max_pop >= 70 or '雷' in summary_wx or '大雨' in summary_wx:
             advice = "⚠️ 預期有強降雨/雷雨風險，溪水可能迅速暴漲，建議暫緩出軍或隨時準備撤離計畫。"

@@ -994,7 +994,22 @@ def mentor_chat():
             chat_history.append({"role": role, "parts": [h['content']]})
 
         chat = model.start_chat(history=chat_history)
-        response = chat.send_message(user_message)
+        
+        try:
+            response = chat.send_message(user_message)
+        except Exception as e:
+            # 如果是 429 額度錯誤且剛才是用 flash，嘗試切換到 pro 救援
+            if "429" in str(e) and selected_model == "gemini-1.5-flash" and "models/gemini-pro" in available:
+                print("⚠️ Flash quota exceeded, falling back to Gemini-Pro...")
+                model_retry = genai.GenerativeModel(
+                    model_name="gemini-pro",
+                    system_instruction=AY_MASTER_SYSTEM_PROMPT
+                )
+                chat_retry = model_retry.start_chat(history=chat_history)
+                response = chat_retry.send_message(user_message)
+                selected_model = "gemini-pro"
+            else:
+                raise e # 其他錯誤或無法救援則拋出
 
         return jsonify({
             "reply": response.text,
@@ -1004,6 +1019,8 @@ def mentor_chat():
     except Exception as e:
         error_msg = str(e)
         print(f"Gemini Error: {error_msg}")
+        if "429" in error_msg:
+            return jsonify({"reply": "😵 大師目前諮詢人數過多（API 免費額度暫時用完），請稍等 1 分鐘再問我一次，大師就會恢復體力了！"}), 500
         return jsonify({"reply": f"😵 大師現在有點累，請稍後再問我。(錯誤代碼: {error_msg[:100]})"}), 500
 
 # --- App Initialization ---

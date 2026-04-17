@@ -7,16 +7,21 @@ import time
 import os
 import requests
 import threading
+import socket
 from functools import wraps
 from dotenv import load_dotenv
 import google.generativeai as genai
 
-# Environment Tweak for Mac SSL/Proxy stability
-os.environ['NO_PROXY'] = '127.0.0.1,localhost'
-
+# Load environment variables
 load_dotenv()
 CWA_TOKEN = os.getenv('CWA_TOKEN', '').strip()
 GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', '').strip()
+
+# Global Headers for all external requests
+COMMON_HEADERS = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+    'Accept': 'application/json'
+}
 
 # Configure Gemini
 if GEMINI_API_KEY:
@@ -226,11 +231,14 @@ def get_spots(basin_id):
 # --- Zero-Latency Intelligence Engine (Background Worker) ---
 LAST_POLLER_ERROR = "None"
 POLLER_CHECKPOINT = "Initializing"
-CWA_TOKEN = os.getenv('CWA_TOKEN')
-if not CWA_TOKEN:
-    print("⚠️ [ WARNING ] CWA_TOKEN is not set! Weather data will not sync.")
-else:
-    print(f"📡 [ INFO ] CWA_TOKEN detected: {CWA_TOKEN[:6]}...{CWA_TOKEN[-4:]}")
+
+def check_dns(hostname="opendata.cwa.gov.tw"):
+    """診斷用：確認環境是否能解析目標網址"""
+    try:
+        ip = socket.gethostbyname(hostname)
+        return f"OK ({ip})"
+    except Exception as e:
+        return f"FAILED: {e}"
 
 INTELLIGENCE_CENTER = {
     "weather": {
@@ -562,10 +570,11 @@ def system_status():
         "poller_running": _poller_started,
         "token_detected": CWA_TOKEN is not None and len(CWA_TOKEN) > 0,
         "token_preview": masked_token,
+        "dns_status": check_dns(),
         "checkpoint": POLLER_CHECKPOINT,
         "last_error": LAST_POLLER_ERROR,
         "server_time": time.strftime("%Y-%m-%d %H:%M:%S"),
-        "version": "v1.2-tactical"
+        "version": "v1.3-tactical-dns"
     })
 
 @app.before_request

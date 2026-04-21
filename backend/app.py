@@ -475,76 +475,64 @@ def fetch_official_traffic(basin_id):
 
 def fetch_official_water(station_id):
     """
-    獲取即時累積雨量。
-    優先使用水利署 (WRA) 橋樑站數據 (坪林拱橋 01A450, 福山一號橋 01A460)，
-    若失敗或數值異常則回溯至氣象署 (CWA) 鄉鎮站數據。
+    獲取雙軌數據：溪位 (WRA) + 雨量 (CWA/WRA)。
+    坪林鎖定：坪林拱橋 (01A450)；福山鎖定：福山一號橋 (01A460)
     """
     try:
-        # 定義測站映射
         wra_sid = "01A450" if station_id == "pinglin" else "01A460"
         cwa_sid = "C0A530" if station_id == "pinglin" else "C2A560"
         
+        # 初始狀態
+        water_level = "--"
         rain_24h = 0.0
         rain_72h = 0.0
-        source_tag = "CWA 氣象署"
-
-        # 優先方案：對接水利署 (WRA) OData API
-        try:
-            global POLLER_CHECKPOINT
-            POLLER_CHECKPOINT = f"Rain WRA {wra_sid}: Connecting..."
-            wra_url = f"https://fhy.wra.gov.tw/WraApi/v1/Rain/RealTimeInfo?$filter=StationNo eq '{wra_sid}'&$format=json"
-            
-            resp_wra = requests.get(wra_url, timeout=(3, 10), verify=False)
-            if resp_wra.status_code == 200:
-                wra_data = resp_wra.json()
-                if wra_data and len(wra_data) > 0:
-                    obs = wra_data[0]
-                    # 水利署欄位：H24 (24小時累積), H72 (72小時累積)
-                    # 註：部分時間點可能只有 H24，我們取最大可用範圍
-                    rain_24h = float(obs.get('H24', 0.0))
-                    # 備註：WRA API 有時沒提供 H72，我們暫以 H24 備援或從氣象署補足
-                    rain_72h = float(obs.get('H72', rain_24h)) 
-                    source_tag = "WRA 水利署 (橋樑站)"
-                    
-                    if rain_24h > 0:
-                        print(f"✅ [ Rain ] WRA Source Success for {station_id}: {rain_24h}mm")
-                        return {
-                            "station_id": station_id,
-                            "station_name": "坪林拱橋" if station_id == "pinglin" else "福山一號橋",
-                            "rain_24h": rain_24h,
-                            "rain_72h": rain_72h,
-                            "source": source_tag,
-                            "turbidity_status": "溪水清澈 🟢" if rain_24h < 15 else ("略有混濁 🟡" if rain_24h < 50 else "洪水警戒 🔴"),
-                            "last_update": obs.get('Time', time.strftime("%H:%M"))[-5:]
-                        }
-        except Exception as wra_err:
-            print(f"⚠️ [ Rain ] WRA API Error, falling back to CWA: {wra_err}")
-
-        # 備選方案：原氣象署 (CWA) 數據
-        url_cwa = f"https://opendata.cwa.gov.tw/api/v1/rest/datastore/O-A0002-001?Authorization={CWA_TOKEN}&format=JSON&StationId={cwa_sid}"
-        POLLER_CHECKPOINT = f"Rain CWA {cwa_sid}: Connecting..."
-        resp_r = requests.get(url_cwa, timeout=(3, 7), verify=False)
-        data_r = resp_r.json()
+        update_time = time.strftime("%H:%M")
         
-        if data_r.get('success') == 'true' and data_r['records']['Station']:
-            re = data_r['records']['Station'][0].get('RainfallElement', {})
-            r_24h_str = re.get('Past24hr', re.get('Past24Hr', {})).get('Precipitation', "0.0")
-            r_72h_str = re.get('Past3days', re.get('Past3Days', {})).get('Precipitation', "0.0")
-            
-            rain_24h = float(r_24h_str) if r_24h_str not in ["-99", " ", "T"] else 0.0
-            rain_72h = float(r_72h_str) if r_72h_str not in ["-99", " ", "T"] else 0.0
+        # 1. 抓取水利署 (WRA) 即時溪位 (這是使用者看見 181/345 的來源)
+        try:
+            # 溪位 API 端點
+            water_url = f"https://fhy.wra.gov.tw/WraApi/v1/Water/RealTimeInfo?$filter=StationNo eq '{wra_sid}'&$format=json"
+            resp_w = requests.get(water_url, timeout=(3, 10), verify=False)
+            if resp_w.status_code == 200:
+                w_data = resp_w.json()
+                if w_data and len(w_data) > 0:
+                    water_level = round(float(w_data[0].get('WaterLevel', 0.0)), 2)
+                    update_time = w_data[0].get('Time', update_time)[-5:]
+                    print(f"✅ [ Water ] WRA Level for {station_id}: {water_level}m")
+        except Exception as e:
+            print(f"⚠️ [ Water ] WRA Level Fetch Failed: {e}")
+
+        # 2. 抓取累積雨量 (優先從 WRA 抓，若無則回溯 CWA)
+        try:
+            # 雨量 API 端點
+            rain_url = f"https://fhy.wra.gov.tw/WraApi/v1/Rain/RealTimeInfo?$filter=StationNo eq '{wra_sid}'&$format=json"
+            resp_r = requests.get(rain_url, timeout=(3, 10), verify=False)
+            if resp_r.status_code == 200:
+                r_data = resp_r.json()
+                if r_data and len(r_data) > 0:
+                    rain_24h = float(r_data[0].get('H24', 0.0))
+                    rain_72h = float(r_data[0].get('H72', rain_24h))
+        except:
+            # 回溯 CWA
+            url_cwa = f"https://opendata.cwa.gov.tw/api/v1/rest/datastore/O-A0002-001?Authorization={CWA_TOKEN}&format=JSON&StationId={cwa_sid}"
+            resp_c = requests.get(url_cwa, timeout=5, verify=False)
+            c_data = resp_c.json()
+            if c_data.get('success') == 'true' and c_data['records']['Station']:
+                re = c_data['records']['Station'][0].get('RainfallElement', {})
+                rain_24h = float(re.get('Past24hr', {}).get('Precipitation', 0.0))
+                rain_72h = float(re.get('Past3days', {}).get('Precipitation', 0.0))
 
         return {
             "station_id": station_id,
-            "station_name": "坪林測站" if station_id == "pinglin" else "福山測站",
+            "station_name": "坪林拱橋" if station_id == "pinglin" else "福山一號橋",
+            "current_level_m": water_level,
             "rain_24h": rain_24h,
             "rain_72h": rain_72h,
-            "source": source_tag,
-            "turbidity_status": "溪水清澈 🟢" if rain_24h < 15 else ("略有混濁 🟡" if rain_24h < 50 else "洪水警戒 🔴"),
-            "last_update": time.strftime("%H:%M")
+            "turbidity_status": "溪水清澈 🟢" if rain_24h < 10 else ("略有混濁 🟡" if rain_24h < 50 else "洪水警戒 🔴"),
+            "last_update": update_time
         }
     except Exception as e:
-        print(f"Background Water Sync Error ({station_id}): {e}")
+        print(f"Background Dual Sync Error ({station_id}): {e}")
     return None
 
 def background_intelligence_poller():
@@ -579,15 +567,15 @@ def background_intelligence_poller():
                 if result:
                     INTELLIGENCE_CENTER["traffic"][bid] = result
             
-            # 3. 更新累積雨量 (取代水位)
+            # 3. 更新累積雨量與水位
             for sid in ["pinglin", "wulai"]:
-                POLLER_CHECKPOINT = f"Syncing Rain for {sid}..."
+                POLLER_CHECKPOINT = f"Syncing Water/Rain for {sid}..."
                 result = fetch_official_water(sid)
                 if result:
                     INTELLIGENCE_CENTER["water"][sid] = result
-                    print(f"✅ [ Rain ] {sid} Synced: 24h={result['rain_24h']}mm, 72h={result['rain_72h']}mm")
+                    print(f"✅ [ Water/Rain ] {sid} Synced: Level={result['current_level_m']}m, 24h={result['rain_24h']}mm")
                 else:
-                    print(f"⚠️ [ Rain ] {sid} Sync failed.")
+                    print(f"⚠️ [ Water/Rain ] {sid} Sync failed.")
             
             POLLER_CHECKPOINT = "Sync Complete"
             INTELLIGENCE_CENTER["last_sync"] = time.strftime("%Y-%m-%d %H:%M:%S")
@@ -628,7 +616,7 @@ def system_status():
             "pinglin_weather": INTELLIGENCE_CENTER["weather"]["pinglin"],
             "pinglin_rain": INTELLIGENCE_CENTER["water"]["pinglin"]
         },
-        "version": "v1.6-wra-rainfall-fix"
+        "version": "v1.7-dual-sync-fix"
     })
 
 @app.before_request

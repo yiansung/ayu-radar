@@ -159,6 +159,7 @@ async function fetchWater(stationId) {
 
         if (data.station_id === "UNKNOWN") {
             document.getElementById('h-station').textContent = "無官方觀測站";
+            document.getElementById('h-water-level').textContent = "- m";
             document.getElementById('h-rain-24h').textContent = "- mm";
             document.getElementById('h-rain-72h').textContent = "- mm";
             setStatusBadge('h-turbidity', data.turbidity_status);
@@ -166,6 +167,15 @@ async function fetchWater(stationId) {
         }
 
         document.getElementById('h-station').textContent = data.station_name || '未知';
+        
+        // 渲染溪流水位
+        const levelEl = document.getElementById('h-water-level');
+        if (levelEl) {
+            const levelVal = data.current_level_m || '--';
+            levelEl.textContent = levelVal !== '--' ? `${levelVal} m` : '-- m';
+        }
+
+        // 渲染累積雨量
         document.getElementById('h-rain-24h').textContent = `${data.rain_24h !== undefined ? data.rain_24h : '-'} mm`;
         document.getElementById('h-rain-72h').textContent = `${data.rain_72h !== undefined ? data.rain_72h : '-'} mm`;
         
